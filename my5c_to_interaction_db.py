@@ -1,10 +1,12 @@
 import argparse
 import logging
-from browser.importers.Interactions import HiCLoader
+from browser.importers.Interactions import HiCLoader, NpzLoader
 
-parser = argparse.ArgumentParser(description='Import My5C files into an sqlite3 database')
-parser.add_argument('-m','--my5c-file-paths', metavar='MY5C_PATH', required=True, nargs='+', help='One or more input My5C files.')
-parser.add_argument('-d','--database-path', metavar='DATABASE_PATH', help='Database path to write to')
+parser = argparse.ArgumentParser(description='Import matrix files into an sqlite3 database')
+parser.add_argument('-m','--matrix-file-paths', metavar='MATRIX_PATH', required=True, nargs='+', help='One or more input My5C files.')
+parser.add_argument('-d','--database-path', metavar='DATABASE_PATH', required=True, help='Database path to write to')
+parser.add_argument('-t','--matrix-type', metavar='MATRIX_TYPE', default='my5c', help='Format of provided matrix files')
+parser.add_argument('-k','--npz-key', metavar='NPZ_KEY', help='Key to use for retrieving data from .npz files')
 parser.add_argument('--debug',
     help='Print lots of debugging statements',
     action="store_const",dest="loglevel",const=logging.DEBUG,
@@ -15,11 +17,19 @@ parser.add_argument('--verbose',
     action="store_const",dest="loglevel",const=logging.INFO
 )
 
+loaders = { 'my5c' : HiCLoader,
+            'npz'  : NpzLoader,
+          }
+
 if __name__ == '__main__':
 
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
 
-    HiCLoader(args.my5c_file_paths, args.database_path).add_matrices_to_db()
+    logging.debug(vars(args))
+
+    Loader = loaders[args.matrix_type]
+
+    Loader(args.matrix_file_paths, args.database_path, **vars(args)).add_matrices_to_db()
 

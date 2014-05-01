@@ -16,7 +16,7 @@ def chunker(n, iterable):
 
 class MatrixLoader(object):
     
-    def __init__(self, matrix_paths, db_path, chrom_regex='chr[0-9X]{1,2}'):
+    def __init__(self, matrix_paths, db_path, chrom_regex='chr[0-9X]{1,2}', **kwargs):
         
         assert not os.path.exists(db_path)
         
@@ -86,11 +86,24 @@ class HiCWindows(object):
     
 class HiCLoader(MatrixLoader):
 
-    def __init__(self, matrix_paths, db_path):
+    def __init__(self, *args, **kwargs):
         
-        super(HiCLoader, self).__init__(matrix_paths, db_path)
+        super(HiCLoader, self).__init__(*args, **kwargs)
         self.windows = HiCWindows(self.db)
         
     def get_data(self, matrix_path):
         
         return pd.read_csv(matrix_path, sep='\t', index_col=0)
+
+        
+class NpzLoader(MatrixLoader):
+        
+    def __init__(self, *args, **kwargs):
+        
+        super(NpzLoader, self).__init__(*args, **kwargs)
+        self.key = kwargs.get('npz_key', 'score')
+
+    def get_data(self, matrix_path):
+        
+        return np.load(matrix_path)[self.key]
+
