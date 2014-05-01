@@ -46,8 +46,8 @@ class MatrixLoader(object):
         all_indices = itertools.product(xrange(chrom_data.shape[0]), xrange(chrom_data.shape[1]))
 
         for indices in chunker(50000, all_indices):
-            table_data = [ (chrom, p, q, chrom_data[p,q]) for p,q in indices ] 
-            df = pd.DataFrame.from_records(table_data, columns=['chrom', 'x', 'y', 'value'])
+            table_data = [ (p, q, chrom_data[p,q]) for p,q in indices ] 
+            df = pd.DataFrame.from_records(table_data, columns=['x', 'y', 'value'])
             df.to_sql(chrom, self.db, if_exists='append')
 
         logging.debug('Creating index on table {0}'.format(chrom))
