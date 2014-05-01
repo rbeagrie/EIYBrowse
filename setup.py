@@ -15,7 +15,7 @@ setup(
     author_email = "rob@beagrie.com",
     description = ("A genome browser written in python."),
     packages=['browser'],
-    long_description=read('README'),
+    long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
