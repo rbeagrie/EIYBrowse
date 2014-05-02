@@ -7,16 +7,18 @@ from pandas.io import sql
 
 class InteractionsPanel(Panel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
-    def __init__(self, interactions_db):
+    def __init__(self, interactions_db, flip, **kwargs):
         super(InteractionsPanel, self).__init__()
 
         self.db = sqlite3.connect(interactions_db)
         self.pos_query = "SELECT i FROM windows WHERE chrom = '{chrom}' AND start <= {start} ORDER BY start DESC LIMIT 1;"
         self.loc_query = "SELECT start, stop FROM windows WHERE i = '{i}' AND chrom = '{chrom}' LIMIT 1;"        
+        self.flip = flip
+        self.kwargs = kwargs
 
     def get_config(self, feature):
 
-        return { 'lines' : 8 }
+        return { 'lines' : 16 }
 
     def get_data_from_bins(self, chrom, start, stop):
             
@@ -92,17 +94,17 @@ class InteractionsPanel(Panel):
         
         return rot
     
-    def _plot(self, ax, feature, flip=False, log=False, **kwargs):
+    def _plot(self, ax, feature, flip=False, log=False):
         
         ax.axis('off')
 
         data, new_feature = self.interactions(feature)
         
-        rotated = self.rotate_to_fit_ax(ax, data, flip)
+        rotated = self.rotate_to_fit_ax(ax, data, self.flip)
         
         if log:
             rotated = np.log10(rotated)
         
-        img = ax.imshow(rotated, interpolation='none', **kwargs)
+        img = ax.imshow(rotated, interpolation='none', **self.kwargs)
         
         return new_feature

@@ -14,7 +14,7 @@ class Browser(object):
     def get_axes(self, panel_configs):
 
         total_lines = sum([ p['lines'] for p in panel_configs ])
-        self.figure = plt.figure(figsize=(16,total_lines))
+        self.figure = plt.figure(figsize=(16,total_lines / 2.))
         axes = []
         line_index = 0
 

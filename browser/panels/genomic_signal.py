@@ -12,7 +12,7 @@ class GenomicSignalPanel(Panel):
 
     def get_config(self, feature):
 
-        return { 'lines' : 2 }
+        return { 'lines' : 4 }
 
     def _plot(self, ax, feature):
 
