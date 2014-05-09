@@ -7,13 +7,14 @@ from pandas.io import sql
 
 class InteractionsPanel(Panel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
-    def __init__(self, interactions_db, flip, **kwargs):
+    def __init__(self, interactions_db, flip, log, **kwargs):
         super(InteractionsPanel, self).__init__()
 
         self.db = sqlite3.connect(interactions_db)
         self.pos_query = "SELECT i FROM windows WHERE chrom = '{chrom}' AND start <= {start} ORDER BY start DESC LIMIT 1;"
         self.loc_query = "SELECT start, stop FROM windows WHERE i = '{i}' AND chrom = '{chrom}' LIMIT 1;"        
         self.flip = flip
+        self.log = log
         self.kwargs = kwargs
 
     def get_config(self, feature):
@@ -94,7 +95,7 @@ class InteractionsPanel(Panel):
         
         return rot
     
-    def _plot(self, ax, feature, flip=False, log=False):
+    def _plot(self, ax, feature, flip=False):
         
         ax.axis('off')
 
@@ -102,7 +103,7 @@ class InteractionsPanel(Panel):
         
         rotated = self.rotate_to_fit_ax(ax, data, self.flip)
         
-        if log:
+        if self.log:
             rotated = np.log10(rotated)
         
         img = ax.imshow(rotated, interpolation='none', **self.kwargs)

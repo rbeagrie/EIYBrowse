@@ -12,3 +12,6 @@ class Panel(object):
 
         return self._plot(ax, feature)
     
+    def _plot(self, ax, feature):
+        pass
+
