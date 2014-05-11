@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 
 class Browser(object):
     """Class that hold plotting panels and controls panel position/style"""
+
     def __init__(self):
         super(Browser, self).__init__()
         
