@@ -30,7 +30,13 @@ class InteractionsPanel(Panel):
         query = query_string.format(start=start, stop=stop,
                                     chrom=chrom)
                 
-        return np.array(sql.read_sql(query, self.db).set_index(['x','y']).unstack())
+        data_array = np.array(sql.read_sql(query, self.db).set_index(['x','y']).unstack())
+
+        N = data_array.shape[0]
+
+        data_array.flat[0:N**2:N + 1] = np.NAN
+
+        return data_array
     
     def get_bin_from_location(self, chrom, location):
         pos = sql.read_sql(self.pos_query.format(chrom=chrom, start=location), self.db)
