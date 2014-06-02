@@ -21,9 +21,14 @@ class Browser(object):
 
         for p_config in panel_configs:
 
-            ax = plt.subplot2grid((total_lines,1), (line_index,0), rowspan=p_config['lines'])
+            label_ax = plt.subplot2grid((total_lines,10), (line_index,0), 
+                                       rowspan=p_config['lines'],)
+
+            plot_ax = plt.subplot2grid((total_lines,10), (line_index,1), 
+                                       rowspan=p_config['lines'],
+                                       colspan=9)
             line_index += p_config['lines']
-            axes.append(ax)
+            axes.append((label_ax, plot_ax))
 
         return axes
         
@@ -38,4 +43,4 @@ class Browser(object):
 
         results = [ p.plot(ax, feature) for p, ax in zip(self.panels, axes) ]
 
-        return self.figure, results
+        return self.figure, axes, results
