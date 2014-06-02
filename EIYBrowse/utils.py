@@ -5,7 +5,7 @@ def format_genomic_distance(distance, precision=1):
     formatting_string = '{{0:.{0}f}}'.format(precision)
     
     if distance < 1000:
-        return '{0:d}bp'.format(distance)
+        return '{0:d}bp'.format(int(distance))
     elif distance < 1000000:
         fmt_string = formatting_string + 'kb'
         return fmt_string.format(float(distance) / 1000)
