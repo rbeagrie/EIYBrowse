@@ -38,4 +38,4 @@ class Browser(object):
 
         results = [ p.plot(ax, feature) for p, ax in zip(self.panels, axes) ]
 
-        return results
+        return self.figure, results
