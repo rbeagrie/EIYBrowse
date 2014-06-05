@@ -14,4 +14,4 @@ class InteractionsGamPanel(InteractionsBasePanel):
         ix_start, ix_stop = segmentation.index_from_interval(self.data, interval)
         region = self.data.iloc[ix_start:ix_stop,]
                 
-        return segmentation.get_matrix_from_regions(self.data, region), feature
+        return segmentation.get_matrix_from_regions(region), feature
