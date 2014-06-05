@@ -27,7 +27,15 @@ class LocationPanel(Panel):
 
 
         ax.set_xlim(feature.start, feature.end)
-        new_labels = [format_genomic_distance(l) for l in ax.xaxis.get_ticklocs()]
+        tick_locations = ax.xaxis.get_ticklocs()
+        precision = 0
+        while True:
+            new_labels = [format_genomic_distance(l, precision) for l in tick_locations]
+            if len(set(new_labels)) != len(tick_locations):
+                precision += 1
+            else:
+                break
+
         ax.xaxis.set_ticklabels(new_labels)
 
         return { 'patches' : None ,
