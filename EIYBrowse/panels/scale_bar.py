@@ -37,7 +37,7 @@ class ScaleBarPanel(Panel):
 
         scale_bar_size = self.get_scale_bar_size(feature_size)
 
-        scale_bar_start = feature_size * 0.2
+        scale_bar_start = feature.start + (feature_size * 0.2)
 
         scale_bar_stop = scale_bar_start + scale_bar_size
 
