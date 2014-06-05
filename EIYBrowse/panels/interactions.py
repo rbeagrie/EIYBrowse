@@ -14,6 +14,19 @@ class InteractionsBasePanel(Panel):
     def get_config(self, feature):
 
         return { 'lines' : 16 }
+
+    def remove_diagonal(self, inArray):
+        "Puts diag in the offset's diagonal of inArray"
+
+        N = inArray.shape[0]
+        assert inArray.shape[1] == N
+        inArray.flat[0:N**2:N + 1] = np.NAN
+
+    def clip_for_plotting(self, array, percentile=1.):
+
+        clip_lower = np.percentile(array[np.isfinite(array)], percentile)
+        clip_upper = np.percentile(array[np.isfinite(array)], (100. - percentile))
+        return np.clip(array, clip_lower, clip_upper)
     
     def rotate_to_fit_ax(self, ax, data, flip=False):
     
@@ -55,6 +68,10 @@ class InteractionsBasePanel(Panel):
         ax.axis('off')
 
         data, new_feature = self.interactions(feature)
+
+        self.remove_diagonal(data)
+
+        data = self.clip_for_plotting(data)
         
         rotated = self.rotate_to_fit_ax(ax, data, self.flip)
         
