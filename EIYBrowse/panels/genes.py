@@ -3,15 +3,20 @@ import gffutils
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.transforms import offset_copy
 
 class GenePanel(Panel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
-    def __init__(self, gff_db_path, color='#377eb8'):
+    def __init__(self, gff_db_path, **config):
         super(GenePanel, self).__init__()
 
-        self.color = color
+        self.config = { 'color':'#377eb8',
+                        'name' : None,
+                        'fontsize':10,}
+
+        self.config.update(config)
         
+        self.name = self.config['name']
+
         self.gff_db = gffutils.FeatureDB(dbfn=gff_db_path)
 
     def get_config(self, feature):
@@ -34,6 +39,7 @@ class GenePanel(Panel):
             l_bb, t_bb = line.get_window_extent(_r), text.get_window_extent(_r)
             start = l_bb.x0
             stop = max([ l_bb.x1, t_bb.x1 ])
+            stop = stop * 1.1
             self.levels.add_gene(g, start, stop)
 
         self.total_levels = len(self.levels.levels)
@@ -76,7 +82,7 @@ class GenePanel(Panel):
 
         span = 1. / ix[1]
         
-        return ax.text(start, ix[0] - span, name)
+        return ax.text(start, ix[0] - span, name, fontsize=self.config['fontsize'])
             
     def plot_gene(self, ax, gene, ix=(0,1)):
         
