@@ -1,23 +1,22 @@
-from .base import Panel
-import gffutils
+from .base import FilePanel
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 
-class GenePanel(Panel):
+class GenePanel(FilePanel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
     def __init__(self, gff_db_path, **config):
-        super(GenePanel, self).__init__()
 
         self.config = { 'color':'#377eb8',
                         'name' : None,
-                        'fontsize':10,}
+                        'fontsize':10,
+                        'file_type':'gffutils_db'}
 
         self.config.update(config)
+
+        super(GenePanel, self).__init__(gff_db_path, self.config['file_type'])
         
         self.name = self.config['name']
-
-        self.gff_db = gffutils.FeatureDB(dbfn=gff_db_path)
 
     def get_config(self, feature):
 
@@ -25,7 +24,7 @@ class GenePanel(Panel):
 
         self.levels = GeneLevels()
 
-        self.genes = list(self.iter_features(self.gff_db.region(feature, completely_within=False, featuretype='gene')))
+        self.genes = list(self.iter_features(self.datafile.region(feature, completely_within=False, featuretype='gene')))
         
         _fig = plt.figure(figsize=(16,1))
         _ax = _fig.add_subplot(111)
@@ -53,9 +52,9 @@ class GenePanel(Panel):
         gene_iterator = (gene for gene in genes)
         
         for gene in gene_iterator:
-            mrnas = list(self.gff_db.children(gene.id, featuretype='mRNA'))
+            mrnas = list(self.datafile.children(gene.id, featuretype='mRNA'))
             longest_mrna = sorted(mrnas, key=lambda m: m.stop - m.start).pop()
-            exons = self.gff_db.children(longest_mrna.id, featuretype='exon')
+            exons = self.datafile.children(longest_mrna.id, featuretype='exon')
             yield { 'gene' : gene,
                     'mrna' : longest_mrna,
                     'exons': exons }

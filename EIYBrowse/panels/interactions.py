@@ -1,15 +1,16 @@
-from .base import Panel
-import sqlite3
-import pybedtools
+from .base import FilePanel
 from PIL import Image
 import numpy as np
-from pandas.io import sql
 
-class InteractionsPanel(Panel):
+class InteractionsPanel(FilePanel):
     """Base panel for displaying 3D interactions data (e.g. Hi-C) across a genomic region"""
-    def __init__(self, flip, log, **kwargs):
-        super(InteractionsPanel, self).__init__()
-        self.flip, self.log, self.kwargs = flip, log, kwargs
+    def __init__(self, file_path, file_type, **config):
+        super(InteractionsPanel, self).__init__(file_path, file_type)
+
+        self.config = {'flip':False,
+                       'log':False}
+
+        self.config.update(config)
         
     def get_config(self, feature):
 
@@ -67,71 +68,18 @@ class InteractionsPanel(Panel):
         
         ax.axis('off')
 
-        data, new_feature = self.interactions(feature)
+        data, new_feature = self.datafile.interactions(feature)
 
         self.remove_diagonal(data)
 
         data = self.clip_for_plotting(data)
         
-        rotated = self.rotate_to_fit_ax(ax, data, self.flip)
+        rotated = self.rotate_to_fit_ax(ax, data, self.config['flip'])
         
-        if self.log:
+        if self.config['log']:
             rotated = np.log10(rotated)
         
-        img = ax.imshow(rotated, interpolation='none', **self.kwargs)
+        img = ax.imshow(rotated, interpolation='none')
         
         return new_feature
 
-class InteractionsDbPanel(InteractionsPanel):
-    """Panel for displaying a continuous signal (e.g. ChIP-seq) across a genomic region"""
-    def __init__(self, interactions_db, flip, log, **kwargs):
-        super(InteractionsDbPanel, self).__init__(flip, log, **kwargs)
-
-        self.db = sqlite3.connect(interactions_db)
-        self.pos_query = "SELECT i FROM windows WHERE chrom = '{chrom}' AND start <= {start} ORDER BY start DESC LIMIT 1;"
-        self.loc_query = "SELECT start, stop FROM windows WHERE i = '{i}' AND chrom = '{chrom}' LIMIT 1;"        
-
-    def get_data_from_bins(self, chrom, start, stop):
-            
-        query_string = """select x, y, value from {chrom} 
-                          where x >= '{start}' and x <= '{stop}'
-                          and y >= '{start}' and y <= '{stop}';"""
-        
-        query = query_string.format(start=start, stop=stop,
-                                    chrom=chrom)
-                
-        data_array = np.array(sql.read_sql(query, self.db).set_index(['x','y']).unstack())
-
-        N = data_array.shape[0]
-
-        data_array.flat[0:N**2:N + 1] = np.NAN
-
-        return data_array
-    
-    def get_bin_from_location(self, chrom, location):
-        pos = sql.read_sql(self.pos_query.format(chrom=chrom, start=location), self.db)
-        return pos.values[0,0]
-    
-    def get_location_from_bin(self, chrom, i):
-        loc = sql.read_sql(self.loc_query.format(chrom=chrom, i=i), self.db)
-        return tuple(loc.values[0])
-    
-    def bins_from_feature(self, feature):
-
-        start_bin = self.get_bin_from_location(feature.chrom, feature.start)
-        stop_bin = self.get_bin_from_location(feature.chrom, feature.stop)
-
-        return feature.chrom, start_bin, stop_bin
-    
-    def feature_from_bins(self, chrom, start_bin, stop_bin):
-        
-        lstart, lstop = self.get_location_from_bin(chrom, start_bin)
-        rstart, rstop = self.get_location_from_bin(chrom, stop_bin)
-        
-        return pybedtools.Interval(chrom, lstart, rstop)
-    
-    def interactions(self, feature):
-        
-        chrom, start, stop = self.bins_from_feature(feature)
-                
-        return self.get_data_from_bins(chrom, start, stop), self.feature_from_bins(chrom, start, stop)

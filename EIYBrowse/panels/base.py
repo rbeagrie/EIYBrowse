@@ -1,3 +1,4 @@
+from ..filetypes import open_file
 
 class Panel(object):
     """Base class for browser panels"""
@@ -22,4 +23,12 @@ class Panel(object):
     
     def _plot(self, ax, feature):
         pass
+
+class FilePanel(Panel):
+    """Base class for browser panels that need external data"""
+
+    def __init__(self, file_path, file_type):
+        super(FilePanel, self).__init__()
+        
+        self.datafile = open_file(file_path, file_type)
 

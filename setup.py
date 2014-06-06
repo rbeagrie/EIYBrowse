@@ -16,13 +16,17 @@ setup(
     description = ("A genome browser written in python."),
     packages=['EIYBrowse'],
     entry_points = {'EIYBrowse.panels': [
-                    'genes = EIYBrowse.panels.genes:GenePanel',
-                    'signal = EIYBrowse.panels.genomic_signal:GenomicSignalPanel',
-                    'intervals = EIYBrowse.panels.interval:GenomicIntervalPanel',
-                    'interactions = EIYBrowse.panels.interactions:InteractionsPanel',
-                    'location = EIYBrowse.panels.location:LocationPanel',
-                    'scale_bar = EIYBrowse.panels.scale_bar:ScaleBarPanel',
-    ]},
+                        'genes = EIYBrowse.panels.genes:GenePanel',
+                        'signal = EIYBrowse.panels.genomic_signal:GenomicSignalPanel',
+                        'intervals = EIYBrowse.panels.interval:GenomicIntervalPanel',
+                        'interactions = EIYBrowse.panels.interactions:InteractionsPanel',
+                        'location = EIYBrowse.panels.location:LocationPanel',
+                        'scale_bar = EIYBrowse.panels.scale_bar:ScaleBarPanel',
+                        ],
+                    'EIYBrowse.filetypes': [
+                        'interactions_db = EIYBrowse.filetypes.interactions_db:InteractionsDbFile',
+                    ]
+                   },
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",

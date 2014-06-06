@@ -1,15 +1,18 @@
-from .base import Panel
-from metaseq._genomic_signal import genomic_signal
+from .base import FilePanel
 
-class GenomicSignalPanel(Panel):
+class GenomicSignalPanel(FilePanel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
-    def __init__(self, gsignal_path, gsignal_type, name=None, bins=800, color='#377eb8'):
-        super(GenomicSignalPanel, self).__init__()
+    def __init__(self, gsignal_path, gsignal_type, **config):
+        super(GenomicSignalPanel, self).__init__(gsignal_path, gsignal_type)
 
-        self.name, self.bins, self.color = name, bins, color
+        self.config = { 'name':None,
+                        'bins':800,
+                        'color':'#377eb8'}
+
+        self.config.update(**config)
+
+        self.name = self.config['name']
         
-        self.genomic_signal = genomic_signal(gsignal_path, gsignal_type)
-
     def get_config(self, feature):
 
         return { 'lines' : 4 }
@@ -18,8 +21,8 @@ class GenomicSignalPanel(Panel):
 
         ax.set_axis_off()
 
-        sig_x, sig_y = self.genomic_signal.local_coverage(feature, bins=self.bins)
-        patches = ax.fill_between(sig_x, sig_y, color=self.color)
+        sig_x, sig_y = self.datafile.local_coverage(feature, bins=self.config['bins'])
+        patches = ax.fill_between(sig_x, sig_y, color=self.config['color'])
         ax.set_xlim(feature.start, feature.stop)
 
         return { 'patches' : patches ,
