@@ -1,7 +1,5 @@
-from .gam_interactions import InteractionsGamPanel
-from .genes import GenePanel
-from .genomic_signal import GenomicSignalPanel
-from .interactions import InteractionsDbPanel
-from .location import LocationPanel
-from .scale_bar import ScaleBarPanel
-from .interval import GenomicIntervalPanel
+from pkg_resources import iter_entry_points
+
+defined_panels = { ep.name : ep.load() for ep in iter_entry_points('EIYBrowse.panels') }
+globals().update(defined_panels)
+

@@ -5,10 +5,10 @@ from PIL import Image
 import numpy as np
 from pandas.io import sql
 
-class InteractionsBasePanel(Panel):
+class InteractionsPanel(Panel):
     """Base panel for displaying 3D interactions data (e.g. Hi-C) across a genomic region"""
     def __init__(self, flip, log, **kwargs):
-        super(InteractionsBasePanel, self).__init__()
+        super(InteractionsPanel, self).__init__()
         self.flip, self.log, self.kwargs = flip, log, kwargs
         
     def get_config(self, feature):
@@ -82,7 +82,7 @@ class InteractionsBasePanel(Panel):
         
         return new_feature
 
-class InteractionsDbPanel(InteractionsBasePanel):
+class InteractionsDbPanel(InteractionsPanel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) across a genomic region"""
     def __init__(self, interactions_db, flip, log, **kwargs):
         super(InteractionsDbPanel, self).__init__(flip, log, **kwargs)
