@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 class Browser(object):
     """Class that hold plotting panels and controls panel position/style"""
 
-    def __init__(self, config={}):
+    def __init__(self, **config):
         super(Browser, self).__init__()
         
         self.panels = []
-        self.defaults = { 'width' : 16,
-                          'lineheight' : .5 }
-        self.defaults.update(config)
+        self.config = { 'width' : 16,
+                        'lineheight' : .5 }
+        self.config.update(config)
 
     def configure(self, panel_configs):
 
@@ -18,8 +18,8 @@ class Browser(object):
     def get_axes(self, panel_configs):
 
         total_lines = sum([ p['lines'] for p in panel_configs ])
-        self.figure = plt.figure(figsize=(self.defaults['width']
-                                          ,total_lines * self.defaults['lineheight']))
+        self.figure = plt.figure(figsize=(self.config['width']
+                                          ,total_lines * self.config['lineheight']))
         axes = []
         line_index = 0
 
@@ -39,7 +39,7 @@ class Browser(object):
     def plot(self, feature):
         """Plot all panels given a feature object for window size"""
 
-        panel_configs = [ p.get_config(feature) for p in self.panels ]
+        panel_configs = [ p.get_config(feature, self.config) for p in self.panels ]
 
         self.configure(panel_configs)
 
