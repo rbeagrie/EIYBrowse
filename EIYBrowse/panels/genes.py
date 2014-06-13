@@ -18,7 +18,7 @@ class GenePanel(FilePanel):
         
         self.name = self.config['name']
 
-    def get_config(self, feature):
+    def get_config(self, feature, browser_config):
 
         self.index = itertools.cycle(np.arange(1,0,-0.25))
 

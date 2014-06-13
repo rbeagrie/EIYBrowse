@@ -8,13 +8,23 @@ class InteractionsPanel(FilePanel):
         super(InteractionsPanel, self).__init__(file_path, file_type)
 
         self.config = {'flip':False,
-                       'log':False}
+                       'log':False,
+                       'rotate':True,
+                       'name':None}
 
         self.config.update(config)
-        
-    def get_config(self, feature):
 
-        return { 'lines' : 16 }
+        self.name = self.config['name']
+        
+    def get_config(self, feature, browser_config):
+
+        lines_wide = browser_config['width'] / browser_config['lineheight']
+        if self.config['rotate']:
+            needed_lines = lines_wide / 2.
+        else:
+            needed_lines = lines_wide
+
+        return { 'lines' : int(needed_lines) }
 
     def remove_diagonal(self, inArray):
         "Puts diag in the offset's diagonal of inArray"
@@ -64,22 +74,28 @@ class InteractionsPanel(FilePanel):
         
         return rot
     
-    def _plot(self, ax, feature, flip=False):
-        
-        ax.axis('off')
+    def _plot(self, ax, feature):
 
         data, new_feature = self.datafile.interactions(feature)
+
+        self.plot_matrix(ax, data)
+        
+        return new_feature
+
+    def plot_matrix(self, ax, data):
+
+        ax.axis('off')
 
         self.remove_diagonal(data)
 
         data = self.clip_for_plotting(data)
         
-        rotated = self.rotate_to_fit_ax(ax, data, self.config['flip'])
+        if self.config['rotate']:
+            rotated = self.rotate_to_fit_ax(ax, data, self.config['flip'])
+        else:
+            rotated = data
         
         if self.config['log']:
             rotated = np.log10(rotated)
         
         img = ax.imshow(rotated, interpolation='none')
-        
-        return new_feature
-

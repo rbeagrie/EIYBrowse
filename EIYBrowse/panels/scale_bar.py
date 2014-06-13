@@ -9,7 +9,7 @@ class ScaleBarPanel(Panel):
 
         self.color = color
 
-    def get_config(self, feature):
+    def get_config(self, feature, browser_config):
 
         return { 'lines' : 1 }
 

@@ -6,13 +6,15 @@ class GenomicIntervalPanel(FilePanel):
         super(GenomicIntervalPanel, self).__init__(gsignal_path, gsignal_type)
         
         self.config = {'name':None,
-                       'color':'#377eb8'}
+                       'color':'#000000',
+                       'colors':None,
+                       'alternate':False}
 
         self.config.update(config)
 
         self.name = self.config['name']
 
-    def get_config(self, feature):
+    def get_config(self, feature, browser_config):
 
         return { 'lines' : 1 }
 
@@ -25,10 +27,21 @@ class GenomicIntervalPanel(FilePanel):
 
         patches = []
 
-        for interval in self.datafile.adapter[feature]:
+        for i, interval in enumerate(self.datafile.adapter[feature]):
 
-            patches.append(ax.hlines(0.8, interval.start, interval.stop, lw=4))
-            if interval.name is not None:
+            if self.config['alternate']:
+                vertical_pos = 0.5 + ((i % 2) * 0.3)
+            else:
+                vertical_pos = 0.8
+
+            if self.config['colors'] is not None:
+                col = self.config['colors'].next()
+            else:
+                col = self.config['color']
+
+            patches.append(ax.hlines(vertical_pos, interval.start, interval.stop, 
+                                     color=col, lw=4))
+            if interval.name is not '.':
                 ax.text(interval.start, 0.2, interval.name)
 
         return { 'patches' : patches ,

@@ -25,6 +25,7 @@ setup(
                         ],
                     'EIYBrowse.filetypes': [
                         'interactions_db = EIYBrowse.filetypes.interactions_db:InteractionsDbFile',
+                        'my5c_folder = EIYBrowse.filetypes.my5c_folder:My5CFolder',
                     ]
                    },
     long_description=read('README.md'),
