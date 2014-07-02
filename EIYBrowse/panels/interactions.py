@@ -10,7 +10,11 @@ class InteractionsPanel(FilePanel):
         self.config = {'flip':False,
                        'log':False,
                        'rotate':True,
-                       'name':None}
+                       'name':None,
+                       'cmap':'jet',
+                       'clip_hard_low':None,
+                       'vmin':None,
+                       'vmax':None}
 
         self.config.update(config)
 
@@ -37,6 +41,8 @@ class InteractionsPanel(FilePanel):
 
         clip_lower = np.percentile(array[np.isfinite(array)], percentile)
         clip_upper = np.percentile(array[np.isfinite(array)], (100. - percentile))
+        if not self.config['clip_hard_low'] is None:
+            array[array < self.config['clip_hard_low']] = np.NAN
         return np.clip(array, clip_lower, clip_upper)
     
     def rotate_to_fit_ax(self, ax, data, flip=False):
@@ -98,4 +104,7 @@ class InteractionsPanel(FilePanel):
         if self.config['log']:
             rotated = np.log10(rotated)
         
-        img = ax.imshow(rotated, interpolation='none')
+        img = ax.imshow(rotated, interpolation='none',
+                        cmap=self.config['cmap'],
+                        vmin=self.config['vmin'],
+                        vmax=self.config['vmax'])
