@@ -8,6 +8,7 @@ class GenomicIntervalPanel(FilePanel):
         self.config = {'name':None,
                        'color':'#000000',
                        'colors':None,
+                       'fontsize':10,
                        'alternate':False}
 
         self.config.update(config)
@@ -42,7 +43,8 @@ class GenomicIntervalPanel(FilePanel):
             patches.append(ax.hlines(vertical_pos, interval.start, interval.stop, 
                                      color=col, lw=4))
             if interval.name is not '.':
-                ax.text(interval.start, 0.2, interval.name)
+                ax.text(interval.start, 0.2, interval.name, fontsize=self.config['fontsize'],
+                       color=col)
 
         return { 'patches' : patches ,
                }

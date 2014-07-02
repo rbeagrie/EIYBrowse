@@ -4,14 +4,17 @@ from matplotlib import pyplot as plt
 
 class LocationPanel(Panel):
     """Panel for displaying location information"""
-    def __init__(self, color='black'):
+    def __init__(self, **config):
         super(LocationPanel, self).__init__()
 
-        self.color = color
+        self.config = { 'color' : 'black',
+                        'fontsize': 10}
+        self.config.update(config)
 
     def get_config(self, feature, browser_config):
 
-        return { 'lines' : 1 }
+        return { 'lines' : 1,
+                  }
 
     def _plot(self, ax, feature):
 
@@ -37,6 +40,7 @@ class LocationPanel(Panel):
                 break
 
         ax.xaxis.set_ticklabels(new_labels)
+        ax.tick_params(labelsize=self.config['fontsize'])
 
         return { 'patches' : None ,
                  'data' : None,
