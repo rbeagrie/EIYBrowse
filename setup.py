@@ -28,7 +28,7 @@ setup(
                         'my5c_folder = EIYBrowse.filetypes.my5c_folder:My5CFolder',
                     ]
                    },
-    install_requires = ["matplotlib", "cython","pybedtools","numpy"],
+    install_requires = ["matplotlib", "pybedtools","numpy"],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
