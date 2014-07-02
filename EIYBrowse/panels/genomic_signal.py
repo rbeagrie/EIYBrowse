@@ -10,8 +10,8 @@ class GenomicSignalPanel(FilePanel):
                         'bins':800,
                         'color':'#377eb8',
                         'height':4,
-                        'top':10,
-                        'bottom':0,
+                        'top':None,
+                        'bottom':None,
                         'negative_color':None}
 
         self.config.update(**config)
@@ -46,7 +46,12 @@ class GenomicSignalPanel(FilePanel):
             patches = ax.fill_between(sig_x, sig_y, color=self.config['color'])
 
         ax.set_xlim(feature.start, feature.stop)
-        ax.set_ylim(self.config['bottom'], self.config['top'])
+        bottom, top = ax.get_ylim()
+        if not self.config['bottom'] is None:
+            bottom = self.config['bottom']
+        if not self.config['top'] is None:
+            top = self.config['top']
+        ax.set_ylim(bottom, top)
 
         return { 'patches' : patches ,
                  'data' : (sig_x, sig_y),
