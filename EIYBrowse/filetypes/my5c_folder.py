@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import pybedtools
 
+class NoFilesError(Exception):
+    pass
+
 class TooManyFilesError(Exception):
     pass
 
@@ -11,6 +14,7 @@ class My5CFolder(object):
     def __init__(self, folder_path):
         
         self.folder_path = folder_path
+        self.file_class = My5cFile
         
     def find_chrom_file(self, chrom):
         
@@ -20,6 +24,8 @@ class My5CFolder(object):
         
         if len(found_files) > 1:
             raise TooManyFilesError('folder containing my5c files must have only one my5c file per chromosome')
+        if not len(found_files):
+            raise NoFilesError('No npz file found matching {0} with search string "{1}"'.format(chrom, search_string))
             
         return found_files[0]
     
@@ -27,7 +33,7 @@ class My5CFolder(object):
 
         my5c_path = self.find_chrom_file(chrom)
         
-        return My5cFile(my5c_path)
+        return self.file_class(my5c_path)
 
     def interactions(self, feature):
 
