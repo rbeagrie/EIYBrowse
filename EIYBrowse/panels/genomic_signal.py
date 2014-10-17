@@ -1,18 +1,19 @@
 from .base import FilePanel
 import numpy as np
 
+from ..utils import Config
 class GenomicSignalPanel(FilePanel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
     def __init__(self, gsignal_path, gsignal_type, **config):
         super(GenomicSignalPanel, self).__init__(gsignal_path, gsignal_type)
 
-        self.config = { 'name':None,
-                        'bins':800,
-                        'color':'#377eb8',
-                        'height':4,
-                        'top':None,
-                        'bottom':None,
-                        'negative_color':None}
+        self.config = Config({ 'name':None,
+                              'bins':800,
+                              'color':'#377eb8',
+                              'height':4,
+                              'top':None,
+                              'bottom':None,
+                              'negative_color':None})
 
         self.config.update(**config)
 

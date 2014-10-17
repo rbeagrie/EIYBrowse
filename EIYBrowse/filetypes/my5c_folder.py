@@ -10,6 +10,9 @@ class NoFilesError(Exception):
 class TooManyFilesError(Exception):
     pass
 
+class InvalidChromError(Exception):
+    pass
+
 class My5CFolder(object):
     def __init__(self, folder_path):
         
@@ -65,15 +68,23 @@ class My5cFile(object):
     
     def index_from_interval(self, feature):
 
+        if not feature.start < feature.stop:
+            raise ValueError('Interval start {0} larger than interval end {1}'.format(feature.start, feature.stop))
+
         window_in_region = np.logical_and(
                                 np.logical_and(
-                                    self.windows.get_level_values('start') >= feature.start,
-                                    self.windows.get_level_values('stop') <= feature.stop),
+                                    self.windows.get_level_values('stop') > feature.start,
+                                    self.windows.get_level_values('start') < feature.stop),
                                     self.windows.get_level_values('chrom') == feature.chrom)
 
         covered_windows = np.nonzero(window_in_region)[0]
+
+        if not len(covered_windows):
+            if not feature.chrom in self.windows.levels[0]:
+                raise InvalidChromError('{0} not found in the list of windows'.format(feature.chrom))
+
         start_index = covered_windows[0]
-        stop_index = covered_windows[-1] + 1 
+        stop_index = covered_windows[-1] + 1
 
         return start_index, stop_index
 

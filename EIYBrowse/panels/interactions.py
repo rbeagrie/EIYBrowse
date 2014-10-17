@@ -1,20 +1,22 @@
 from .base import FilePanel
 from PIL import Image
 import numpy as np
+from ..utils import Config
 
 class InteractionsPanel(FilePanel):
     """Base panel for displaying 3D interactions data (e.g. Hi-C) across a genomic region"""
     def __init__(self, file_path, file_type, **config):
         super(InteractionsPanel, self).__init__(file_path, file_type)
 
-        self.config = {'flip':False,
+        self.config = Config({'flip':False,
                        'log':False,
                        'rotate':True,
                        'name':None,
                        'cmap':'jet',
                        'clip_hard_low':None,
+                       'clip':1.,
                        'vmin':None,
-                       'vmax':None}
+                       'vmax':None})
 
         self.config.update(config)
 
@@ -94,7 +96,8 @@ class InteractionsPanel(FilePanel):
 
         self.remove_diagonal(data)
 
-        data = self.clip_for_plotting(data)
+        if self.config.clip:
+            data = self.clip_for_plotting(data, self.config.clip)
         
         if self.config['rotate']:
             rotated = self.rotate_to_fit_ax(ax, data, self.config['flip'])

@@ -13,3 +13,13 @@ def format_genomic_distance(distance, precision=1):
         fmt_string = formatting_string + 'Mb'
         return fmt_string.format(float(distance) / 1000000)
 
+class Config(dict):
+    def init(self):
+        super(Config, self).__init__()
+        
+    def __getattr__(self, key):
+        return self[key]
+        
+    def __setattr__(self, key, value):
+        self[key] = value
+

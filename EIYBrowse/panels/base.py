@@ -15,9 +15,19 @@ class Panel(object):
 
         label_ax.set_axis_off()
 
+        if 'name_rotate' in self.config.keys() and self.config.name_rotate:
+            name_rotate = True
+        else:
+            name_rotate = False
+
         if hasattr(self, 'name') and not self.name is None:
-            label_ax.text(0.5, 0.5,self.name, horizontalalignment='center',
+            if name_rotate:
+                label_ax.text(0.5, 0.5,self.name, horizontalalignment='center',
+                      verticalalignment='center', fontsize=12, rotation=90)
+            else:
+                label_ax.text(0.5, 0.5,self.name, horizontalalignment='center',
                       verticalalignment='center', fontsize=12)
+
 
         return self._plot(plot_ax, feature)
     

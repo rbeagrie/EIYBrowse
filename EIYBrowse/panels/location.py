@@ -1,5 +1,5 @@
 from .base import Panel
-from ..utils import format_genomic_distance
+from ..utils import format_genomic_distance, Config
 from matplotlib import pyplot as plt
 
 class LocationPanel(Panel):
@@ -7,8 +7,8 @@ class LocationPanel(Panel):
     def __init__(self, **config):
         super(LocationPanel, self).__init__()
 
-        self.config = { 'color' : 'black',
-                        'fontsize': 10}
+        self.config = Config({ 'color' : 'black',
+                        'fontsize': 10})
         self.config.update(config)
 
     def get_config(self, feature, browser_config):
