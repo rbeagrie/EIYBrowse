@@ -5,8 +5,8 @@ from ..utils import Config
 
 class InteractionsPanel(FilePanel):
     """Base panel for displaying 3D interactions data (e.g. Hi-C) across a genomic region"""
-    def __init__(self, file_path, file_type, **config):
-        super(InteractionsPanel, self).__init__(file_path, file_type)
+    def __init__(self, **config):
+        super(InteractionsPanel, self).__init__(**config)
 
         self.config = Config({'flip':False,
                        'log':False,

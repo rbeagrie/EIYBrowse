@@ -1,4 +1,5 @@
 from ..filetypes import open_file
+from ..exceptions import ImproperlyConfigured
 
 class Panel(object):
     """Base class for browser panels"""
@@ -37,8 +38,20 @@ class Panel(object):
 class FilePanel(Panel):
     """Base class for browser panels that need external data"""
 
-    def __init__(self, file_path, file_type):
+    def __init__(self, **config):
         super(FilePanel, self).__init__()
+
+        missing_keys = []
+
+        for check_key in ['file_path', 'file_type']:
+            if not check_key in config:
+                missing_keys.append(check_key)
+
+        if len(missing_keys):
+            raise ImproperlyConfigured(
+                'The configuration for {0} is missing the following keys: {1}'.format(
+                    type(self).__name__, ', '.join(missing_keys)))
         
-        self.datafile = open_file(file_path, file_type)
+        self.datafile = open_file(config['file_path'],
+                                  config['file_type'])
 

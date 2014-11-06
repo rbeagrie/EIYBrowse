@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class GenePanel(FilePanel):
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
-    def __init__(self, gff_db_path, **config):
+    def __init__(self, **config):
 
         self.config = { 'color':'#377eb8',
                         'name' : None,
@@ -14,7 +14,7 @@ class GenePanel(FilePanel):
 
         self.config.update(config)
 
-        super(GenePanel, self).__init__(gff_db_path, self.config['file_type'])
+        super(GenePanel, self).__init__(**self.config)
         
         self.name = self.config['name']
 

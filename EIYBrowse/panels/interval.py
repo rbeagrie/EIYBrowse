@@ -2,8 +2,8 @@ from .base import FilePanel
 
 class GenomicIntervalPanel(FilePanel):
     """Panel for displaying a discrete signal (e.g. a bed file of binding peaks) accross a genomic region"""
-    def __init__(self, gsignal_path, gsignal_type, **config):
-        super(GenomicIntervalPanel, self).__init__(gsignal_path, gsignal_type)
+    def __init__(self, **config):
+        super(GenomicIntervalPanel, self).__init__(**config)
         
         self.config = {'name':None,
                        'color':'#000000',
