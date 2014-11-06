@@ -2,43 +2,49 @@ from .base import FilePanel
 import numpy as np
 from ..utils import Config
 
+
 class GenomicSignalPanel(FilePanel):
-    """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
+
+    """Panel for displaying a continuous signal accross a genomic region"""
+
     def __init__(self, **config):
         super(GenomicSignalPanel, self).__init__(**config)
 
-        self.config = Config({ 'name':None,
-                              'bins':800,
-                              'color':'#377eb8',
-                              'height':4,
-                              'top':None,
-                              'bottom':None,
-                              'negative_color':None})
+        self.config = Config({'name': None,
+                              'bins': 800,
+                              'color': '#377eb8',
+                              'height': 4,
+                              'top': None,
+                              'bottom': None,
+                              'negative_color': None})
 
         self.config.update(**config)
 
         self.name = self.config['name']
-        
+
     def get_config(self, feature, browser_config):
 
-        return { 'lines' : self.config['height'] }
+        return {'lines': self.config['height']}
 
     def _plot(self, ax, feature):
 
         ax.set_axis_off()
 
-        sig_x, sig_y = self.datafile.local_coverage(feature, bins=self.config['bins'])
-        
+        sig_x, sig_y = self.datafile.local_coverage(
+            feature, bins=self.config['bins'])
+
         if self.config['negative_color'] is not None:
             pos_y = sig_y.copy()
             pos_y[pos_y <= 0.] = np.NAN
 
-            pos_patches = ax.fill_between(sig_x, pos_y, color=self.config['color'])
+            pos_patches = ax.fill_between(
+                sig_x, pos_y, color=self.config['color'])
 
             neg_y = sig_y.copy()
             neg_y[neg_y >= 0.] = np.NAN
 
-            neg_patches = ax.fill_between(sig_x, neg_y, color=self.config['negative_color'])
+            neg_patches = ax.fill_between(
+                sig_x, neg_y, color=self.config['negative_color'])
 
             patches = [pos_patches, neg_patches]
 
@@ -54,6 +60,6 @@ class GenomicSignalPanel(FilePanel):
             top = self.config['top']
         ax.set_ylim(bottom, top)
 
-        return { 'patches' : patches ,
-                 'data' : (sig_x, sig_y),
-               }
+        return {'patches': patches,
+                'data': (sig_x, sig_y),
+                }

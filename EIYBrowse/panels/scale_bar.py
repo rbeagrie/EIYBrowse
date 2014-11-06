@@ -2,22 +2,24 @@ from .base import Panel
 from ..utils import format_genomic_distance, Config
 import numpy as np
 
-class ScaleBarPanel(Panel):
-    """Panel for displaying a scale bar"""
-    def __init__(self, **config):
-        super(ScaleBarPanel, self).__init__()
 
-        self.config = Config({ 'color' : 'black',
-                        'fontsize': 10})
+class ScaleBarPanel(Panel):
+
+    """Panel for displaying a scale bar"""
+
+    def __init__(self, **config):
+        super(ScaleBarPanel, self).__init__(**config)
+
+        self.config = Config({'color': 'black',
+                              'fontsize': 10})
 
         self.config.update(config)
 
     def get_config(self, feature, browser_config):
 
-        return { 'lines' : 1 }
+        return {'lines': 1}
 
     def get_scale_bar_size(self, feature_size):
-
 
         digits = int(np.floor(np.log10(abs(feature_size))))
 
@@ -33,7 +35,6 @@ class ScaleBarPanel(Panel):
 
         return scale_bar_size
 
-
     def get_scale_bar_limits(self, feature):
 
         feature_size = feature.end - feature.start
@@ -46,7 +47,6 @@ class ScaleBarPanel(Panel):
 
         return scale_bar_start, scale_bar_stop
 
-
     def _plot(self, ax, feature):
 
         start, stop = self.get_scale_bar_limits(feature)
@@ -54,14 +54,13 @@ class ScaleBarPanel(Panel):
         ax.set_axis_off()
 
         ax.set_xlim(feature.start, feature.end)
-        ax.set_ylim(0,1)
+        ax.set_ylim(0, 1)
         ax.hlines(0.8, start, stop, lw=4)
 
         label = format_genomic_distance(stop - start, precision=0)
 
-
         ax.text(start, 0.1, label)
 
-        return { 'patches' : None ,
-                 'data' : None,
-               }
+        return {'patches': None,
+                'data': None,
+                }

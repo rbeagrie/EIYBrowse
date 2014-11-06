@@ -1,12 +1,17 @@
 from ..filetypes import open_file
 from ..exceptions import ImproperlyConfigured
 
+
 class Panel(object):
+
     """Base class for browser panels"""
-    def __init__(self):
+
+    def __init__(self, **config):
         super(Panel, self).__init__()
-        
-    def get_config(self, feature):
+
+        self.config = config
+
+    def get_config(self, feature, browser_config):
 
         return {}
 
@@ -23,23 +28,28 @@ class Panel(object):
 
         if hasattr(self, 'name') and not self.name is None:
             if name_rotate:
-                label_ax.text(0.5, 0.5,self.name, horizontalalignment='center',
-                      verticalalignment='center', fontsize=12, rotation=90)
+                label_ax.text(0.5, 0.5, self.name, 
+                              horizontalalignment='center',
+                              verticalalignment='center', 
+                              fontsize=12, rotation=90)
             else:
-                label_ax.text(0.5, 0.5,self.name, horizontalalignment='center',
-                      verticalalignment='center', fontsize=12)
-
+                label_ax.text(0.5, 0.5, self.name, 
+                              horizontalalignment='center',
+                              verticalalignment='center', 
+                              fontsize=12)
 
         return self._plot(plot_ax, feature)
-    
+
     def _plot(self, ax, feature):
         pass
 
+
 class FilePanel(Panel):
+
     """Base class for browser panels that need external data"""
 
     def __init__(self, **config):
-        super(FilePanel, self).__init__()
+        super(FilePanel, self).__init__(**config)
 
         missing_keys = []
 
@@ -51,7 +61,6 @@ class FilePanel(Panel):
             raise ImproperlyConfigured(
                 'The configuration for {0} is missing the following keys: {1}'.format(
                     type(self).__name__, ', '.join(missing_keys)))
-        
+
         self.datafile = open_file(config['file_path'],
                                   config['file_type'])
-
