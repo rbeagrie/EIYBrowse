@@ -19,6 +19,8 @@ try:
 except ImportError:
     raise ImportError('EIYBrowse must be installed to build these docs')
 
+raise Exception('Testing this stuff {0}'.format(dir(EIYBrowse)))
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
