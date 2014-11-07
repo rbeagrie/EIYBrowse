@@ -1,15 +1,23 @@
-from metaseq._genomic_signal import _registry
-import gffutils
 from pkg_resources import iter_entry_points
 
 
 def get_file_opener(file_type):
-    defined_filetypes = {
-        ep.name: ep.load() for ep in iter_entry_points('EIYBrowse.filetypes')}
 
-    defined_filetypes.update({'gffutils_db': gffutils.FeatureDB})
+    import os
+    on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-    defined_filetypes.update(_registry)
+    if not on_rtd:
+        defined_filetypes = {
+            ep.name: ep.load() for ep in iter_entry_points('EIYBrowse.filetypes')}
+
+        import gffutils
+        defined_filetypes.update({'gffutils_db': gffutils.FeatureDB})
+
+        from metaseq._genomic_signal import _registry
+        defined_filetypes.update(_registry)
+
+    else:
+        defined_filetypes = {}
 
     return defined_filetypes[file_type]
 
