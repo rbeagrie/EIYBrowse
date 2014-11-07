@@ -273,6 +273,6 @@ autoclass_content = 'both'
 import mock
  
 MOCK_MODULES = ['numpy', 'matplotlib', 'yaml', 'matplotlib.pyplot',
-                'pybedtools', 'pandas'] 
+                'pybedtools', 'pandas', 'metaseq'] 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
