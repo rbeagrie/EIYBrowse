@@ -14,7 +14,10 @@ setup(
     author = "Rob Beagrie",
     author_email = "rob@beagrie.com",
     description = ("A genome browser written in python."),
-    packages=['EIYBrowse'],
+    packages=['EIYBrowse',
+              'EIYBrowse.panels',
+              'EIYBrowse.importers',
+              'EIYBrowse.filetypes'],
     entry_points = {'EIYBrowse.panels': [
                         'genes = EIYBrowse.panels.genes:GenePanel',
                         'signal = EIYBrowse.panels.genomic_signal:GenomicSignalPanel',
