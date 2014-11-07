@@ -42,12 +42,13 @@ def panels_from_config(config_dict):
 
 def browser_from_config_dict(config_dict):
 
-    if 'browser' in config_dict:
-        browser = Browser(**config_dict['browser'])
-    else:
-        browser = Browser()
+    panels = panels_from_config(config_dict)
 
-    browser.panels = panels_from_config(config_dict)
+    if 'browser' in config_dict:
+        browser = Browser(panels, config_dict['browser'])
+    else:
+        browser = Browser(panels)
+
 
     return browser
 
