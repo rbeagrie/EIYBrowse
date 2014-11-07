@@ -263,3 +263,16 @@ texinfo_documents = [
 
 # Concatenate class __init__ documentation
 autoclass_content = 'both'
+
+# -- Read The Docs Mocking -----------------------------------------------
+
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+
+MOCK_MODULES = ['matplotlib', 'yaml', 'numpy']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
