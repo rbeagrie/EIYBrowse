@@ -3,7 +3,7 @@ from pkg_resources import iter_entry_points
 import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if on_rtd:
+if not on_rtd:
     defined_panels = {ep.name: ep.load()
                       for ep in iter_entry_points('EIYBrowse.panels')}
 else:
