@@ -118,15 +118,14 @@ class Plot(object):
 class Browser(object):
     """Browser stores the plotting panels and controls panel position/style"""
 
-    config_defaults = {'width': 16,
-                       'lineheight': .5}
-
-    def __init__(self, panels=None, config=None):
+    def __init__(self, panels=None,
+                 width=16, lineheight=.5):
         """Create a new EIYBrowse Browser.
 
         :param list panels: A list of :class:`~EIYBrowse.panels.base.Panel`
             objects to handle the plotting.
-        :param dict config: Dictionary containing configuration values
+        :param float width: Width of the browser window
+        :param float lineheight: Height of each horizontal line in the browser.
         """
 
         super(Browser, self).__init__()
@@ -134,10 +133,8 @@ class Browser(object):
         # If panels param is not None, use that. Else use emtpy list.
         self.panels = panels or []
 
-        self.config = self.config_defaults.copy()
+        self.width, self.lineheight = width, lineheight
 
-        if config is not None:
-            self.config.update(config)
 
     def setup_plot(self, panel_configs):
         """Create a new plotting area.
@@ -155,8 +152,8 @@ class Browser(object):
 
         total_lines = sum([p['lines'] for p in panel_configs])
 
-        plot = Plot(self.config['width'],
-                    total_lines, self.config['lineheight'])
+        plot = Plot(self.width,
+                    total_lines, self.lineheight)
 
         for panel, panel_config in zip(self.panels, panel_configs):
 
@@ -172,7 +169,7 @@ class Browser(object):
 
         """
 
-        panel_configs = [p.get_config(interval, self.config)
+        panel_configs = [p.get_config(interval, self)
                          for p in self.panels]
 
         plot = self.setup_plot(panel_configs)

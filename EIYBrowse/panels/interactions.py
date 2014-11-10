@@ -68,9 +68,9 @@ class InteractionsPanel(FilePanel):
 
         self.name = self.config['name']
 
-    def get_config(self, feature, browser_config):
+    def get_config(self, feature, browser):
 
-        lines_wide = browser_config['width'] / browser_config['lineheight']
+        lines_wide = browser.width / browser.lineheight
         if self.config['rotate']:
             needed_lines = lines_wide / 2.
         else:
