@@ -1,6 +1,6 @@
 """The configuration module contains some helper functions for
-generating :class:`~EIYBrowse.core.browser` objects with all
-the correct :class:`~EIYBrowse.panels.Panel` objects attached
+generating :class:`~EIYBrowse.core.Browser` objects with all
+the correct :class:`~EIYBrowse.panels.base.Panel` objects attached
 starting from an external configuration file.
 
 Currently only `YAML <http://en.wikipedia.org/wiki/YAML>`_ is
@@ -16,16 +16,16 @@ from .core import Browser
 
 def panel_from_panel_config(panel_config):
 
-    """Create a new :class:`~EIYBrowse.panels.Panel` object
+    """Create a new :class:`~EIYBrowse.panels.base.Panel` object
     from a dictionary of configuration parameters.
 
     :param dict panel_config: Dictionary with a single key,
         which gives the name of the type of
-        :class:`~EIYBrowse.panels.Panel` object. (e.g.
+        :class:`~EIYBrowse.panels.base.Panel` object. (e.g.
         "scale_bar"). The value of this key is another
         dictionary of key=value pairs to be passed as
         arguments to the new panel's constructor method.
-    :returns: New :class:`~EIYBrowse.panels.Panel` object
+    :returns: New :class:`~EIYBrowse.panels.base.Panel` object
     :raises ImproperlyConfigured: If the dictionary is
         not constructed correctly, or if the top-level key
         does not match any currently installed panels.
@@ -55,13 +55,13 @@ def panel_from_panel_config(panel_config):
 def panels_from_config(config_dict):
 
     """Convert the panels section of a configuration file into a list of
-    :class:`~EIYBrowse.panels.Panel` objects
+    :class:`~EIYBrowse.panels.base.Panel` objects
 
     :param dict config_dict: Dictionary representation of a configuration
         file containing the key 'panels'. This key should point to a list
         of dictionaries, each of which defines the configuration
-        parameters of a single :class:`~EIYBrowse.panels.Panel` instance.
-    :returns: List of :class:`~EIYBrowse.panels.Panel` objects.
+        parameters of a single :class:`~EIYBrowse.panels.base.Panel` instance.
+    :returns: List of :class:`~EIYBrowse.panels.base.Panel` objects.
     """
 
     return [panel_from_panel_config(p_conf) for p_conf in config_dict['panels']]
@@ -70,13 +70,14 @@ def panels_from_config(config_dict):
 def browser_from_config_dict(config_dict):
 
     """Convert a parsed configuration file in dictionary format into a
-    :class:`~EIYBrowse.core.browser` object with a full list of
-    :class:`~EIYBrowse.panels.Panel` objects.
+    :class:`~EIYBrowse.core.Browser` object with a full list of
+    :class:`~EIYBrowse.panels.base.Panel` objects.
 
     :param dict config_dict: Dictionary containing a 'panels' key, defining
-        the list of browser :class:`~EIYBrowse.panels.Panel`s, and an optional
-        'browser' key, containing configuration options for the browser itself.
-    :returns: :class:`~EIYBrowse.core.browser` object ready to be used for
+        the list of browser :class:`~EIYBrowse.panels.base.Panel` objects,
+        and an optional 'browser' key, containing configuration options for
+        the browser itself.
+    :returns: :class:`~EIYBrowse.core.Browser` object ready to be used for
         plotting.
     """
 
@@ -98,12 +99,12 @@ def browser_from_config_dict(config_dict):
 def browser_from_config_yaml(config_yaml):
 
     """Parse some configuration yaml and pass the resulting dictionary to
-    :function:`browser_from_config_dict` to generate the correct
-    :class:`~EIYBrowse.core.browser` object.
+    :func:`browser_from_config_dict` to generate the correct
+    :class:`~EIYBrowse.core.Browser` object.
 
     :param str config_yaml: String containing valid YAML to parse into a
         dictionary format.
-    :returns: :class:`~EIYBrowse.core.browser` object ready to be used for
+    :returns: :class:`~EIYBrowse.core.Browser` object ready to be used for
         plotting.
     """
 
