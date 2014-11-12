@@ -1,3 +1,32 @@
+"""This module provides some helper functions for opening
+the correct file handler given a string representation
+of the file type to open.
+
+Available filetypes are found through setuptools
+`automatic plugin discovery feature
+<https://pythonhosted.org/setuptools/setuptools.html#dynamic-discovery-of-services-and-plugins>`_.
+
+EIYBrowse defines available filetype plugins under the
+EIYBrowse.filetypes entry point. This module also adds gffutils FeatureDB
+class, and the file classes defined by the metaseq package, if they are
+available.
+
+To define a new filetype which can be used by EIYBrowse, any package
+just needs to define it in the entry_points section of the
+package's setup.py. For example::
+
+    setup(
+        name = "EIYBrowse_ChIA_PET_plugin",
+        packages=['chiapet_plugin'],
+        entry_points = {'EIYBrowse.filetypes': [
+                            'chia_pet = chiapet_plugin.plugin_module:ChiaPETPluginClass',
+                        ]
+                       },
+    )
+
+"""
+
+
 from pkg_resources import iter_entry_points
 
 
@@ -8,7 +37,8 @@ def get_file_opener(file_type):
 
     if not on_rtd:
         defined_filetypes = {
-            ep.name: ep.load() for ep in iter_entry_points('EIYBrowse.filetypes')}
+            ep.name: ep.load()
+            for ep in iter_entry_points('EIYBrowse.filetypes')}
 
         import gffutils
         defined_filetypes.update({'gffutils_db': gffutils.FeatureDB})
