@@ -1,7 +1,6 @@
 from .base import FilePanel
 from PIL import Image
 import numpy as np
-from ..utils import Config
 
 
 def remove_diagonal(in_array):
@@ -51,27 +50,23 @@ class InteractionsPanel(FilePanel):
     """Base panel for displaying 3D interactions data 
     (e.g. Hi-C) across a genomic region"""
 
-    def __init__(self, **config):
-        super(InteractionsPanel, self).__init__(**config)
+    def __init__(self, file_path, file_type,
+                 flip=False, log=False, rotate=True,
+                 clip=1., clip_hard=None,
+                 name=None, name_rotate=False,
+                 **kwargs):
 
-        self.config = Config({'flip': False,
-                              'log': False,
-                              'rotate': True,
-                              'name': None,
-                              'cmap': 'jet',
-                              'clip_hard_low': None,
-                              'clip': 1.,
-                              'vmin': None,
-                              'vmax': None})
+        super(InteractionsPanel, self).__init__(file_path, file_type, name_rotate)
 
-        self.config.update(config)
+        self.flip, self.log, self.rotate = flip, log, rotate
+        self.clip, self.clip_hard = clip, clip_hard
+        self.kwargs = kwargs
 
-        self.name = self.config['name']
 
     def get_config(self, feature, browser):
 
         lines_wide = browser.width / browser.lineheight
-        if self.config['rotate']:
+        if self.rotate:
             needed_lines = lines_wide / 2.
         else:
             needed_lines = lines_wide
@@ -83,8 +78,8 @@ class InteractionsPanel(FilePanel):
         clip_lower = np.percentile(array[np.isfinite(array)], percentile)
         clip_upper = np.percentile(
             array[np.isfinite(array)], (100. - percentile))
-        if not self.config['clip_hard_low'] is None:
-            array[array < self.config['clip_hard_low']] = np.NAN
+        if not self.clip_hard is None:
+            array[array < self.clip_hard] = np.NAN
         return np.clip(array, clip_lower, clip_upper)
 
     def _plot(self, ax, feature):
@@ -101,18 +96,15 @@ class InteractionsPanel(FilePanel):
 
         remove_diagonal(data)
 
-        if self.config.clip:
-            data = self.clip_for_plotting(data, self.config.clip)
+        if self.clip:
+            data = self.clip_for_plotting(data, self.clip)
 
-        if self.config['rotate']:
-            rotated = rotate_to_fit_ax(ax, data, self.config['flip'])
+        if self.rotate:
+            rotated = rotate_to_fit_ax(ax, data, self.flip)
         else:
             rotated = data
 
-        if self.config['log']:
+        if self.log:
             rotated = np.log10(rotated)
 
-        ax.imshow(rotated, interpolation='none',
-                        cmap=self.config['cmap'],
-                        vmin=self.config['vmin'],
-                        vmax=self.config['vmax'])
+        ax.imshow(rotated, interpolation='none', **self.kwargs)

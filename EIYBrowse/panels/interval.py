@@ -6,18 +6,15 @@ class GenomicIntervalPanel(FilePanel):
     """Panel for displaying a discrete signal 
     (e.g. a bed file of binding peaks) accross a genomic region"""
 
-    def __init__(self, **config):
-        super(GenomicIntervalPanel, self).__init__(**config)
+    def __init__(self, file_path, file_type,
+                 color='#000000', colors=None, fontsize=10,
+                 jitter=0.0,
+                 name=None, name_rotate=False):
 
-        self.config = {'name': None,
-                       'color': '#000000',
-                       'colors': None,
-                       'fontsize': 10,
-                       'alternate': False}
+        super(GenomicIntervalPanel, self).__init__(file_path, file_type, name_rotate)
 
-        self.config.update(config)
-
-        self.name = self.config['name']
+        self.color, self.colors, self.fontsize = color, colors, fontsize
+        self.jitter = jitter
 
     def get_config(self, feature, browser_config):
 
@@ -34,15 +31,12 @@ class GenomicIntervalPanel(FilePanel):
 
         for i, interval in enumerate(self.datafile.adapter[feature]):
 
-            if self.config['alternate']:
-                vertical_pos = 0.5 + ((i % 2) * 0.3)
-            else:
-                vertical_pos = 0.8
+            vertical_pos = 0.8 + ((i % 2 or -1) * self.jitter)
 
-            if self.config['colors'] is not None:
-                col = self.config['colors'].next()
+            if self.colors is not None:
+                col = self.colors.next()
             else:
-                col = self.config['color']
+                col = self.color
 
             patches.append(
                 ax.hlines(vertical_pos, 
@@ -51,7 +45,7 @@ class GenomicIntervalPanel(FilePanel):
 
             if interval.name is not '.':
                 ax.text(interval.start, 0.2, interval.name, 
-                        fontsize=self.config['fontsize'],
+                        fontsize=self.fontsize,
                         color=col)
 
         return {'patches': patches,

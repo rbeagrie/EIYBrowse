@@ -1,5 +1,5 @@
 from .base import Panel
-from ..utils import format_genomic_distance, Config
+from ..utils import format_genomic_distance
 from matplotlib import pyplot as plt
 
 
@@ -7,12 +7,12 @@ class LocationPanel(Panel):
 
     """Panel for displaying location information"""
 
-    def __init__(self, **config):
-        super(LocationPanel, self).__init__(**config)
+    def __init__(self, color='#000000', fontsize=10,
+                name_rotate=False):
 
-        self.config = Config({'color': 'black',
-                              'fontsize': 10})
-        self.config.update(config)
+        super(LocationPanel, self).__init__(name_rotate)
+
+        self.color, self.fontsize = color, fontsize
 
     def get_config(self, feature, browser_config):
 
@@ -42,7 +42,7 @@ class LocationPanel(Panel):
                 break
 
         ax.xaxis.set_ticklabels(new_labels)
-        ax.tick_params(labelsize=self.config['fontsize'])
+        ax.tick_params(labelsize=self.fontsize)
 
         return {'patches': None,
                 'data': None}

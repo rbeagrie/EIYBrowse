@@ -8,18 +8,13 @@ class GenePanel(FilePanel):
 
     """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
 
-    def __init__(self, **config):
+    def __init__(self, file_path, file_type='gffutils_db',
+                 color='#377eb8', fontsize=10,
+                 name=None, name_rotate=False):
 
-        self.config = {'color': '#377eb8',
-                       'name': None,
-                       'fontsize': 10,
-                       'file_type': 'gffutils_db'}
+        self.color, self.name, self.fontsize = color, name, fontsize
 
-        self.config.update(config)
-
-        super(GenePanel, self).__init__(**self.config)
-
-        self.name = self.config['name']
+        super(GenePanel, self).__init__(file_path, file_type, name_rotate)
 
     def get_config(self, feature, browser_config):
 
@@ -85,7 +80,7 @@ class GenePanel(FilePanel):
 
         span = 1. / ix[1]
 
-        return ax.text(start, ix[0] - span, name, fontsize=self.config['fontsize'])
+        return ax.text(start, ix[0] - span, name, fontsize=self.fontsize)
 
     def plot_gene(self, ax, gene, ix=(0, 1)):
 

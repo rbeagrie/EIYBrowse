@@ -1,5 +1,5 @@
 from .base import Panel
-from ..utils import format_genomic_distance, Config
+from ..utils import format_genomic_distance
 import numpy as np
 
 
@@ -7,13 +7,12 @@ class ScaleBarPanel(Panel):
 
     """Panel for displaying a scale bar"""
 
-    def __init__(self, **config):
-        super(ScaleBarPanel, self).__init__(**config)
+    def __init__(self, color='#000000', fontsize=10,
+                name_rotate=False):
 
-        self.config = Config({'color': 'black',
-                              'fontsize': 10})
+        super(ScaleBarPanel, self).__init__(name_rotate)
 
-        self.config.update(config)
+        self.color, self.fontsize = color, fontsize
 
     def get_config(self, feature, browser_config):
 
