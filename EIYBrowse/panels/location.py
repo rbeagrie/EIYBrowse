@@ -1,3 +1,8 @@
+"""The location module contains the LocationPanel class,
+which defines a panel for showing an axis with genomic
+position in basepair co-ordinates.
+"""
+
 from .base import Panel
 from ..utils import format_genomic_distance
 from matplotlib import pyplot as plt
@@ -5,20 +10,23 @@ from matplotlib import pyplot as plt
 
 class LocationPanel(Panel):
 
-    """Panel for displaying location information"""
+    """Panel for displaying location in genomic co-ordinates."""
 
     def __init__(self, color='#000000', fontsize=10,
-                name_rotate=False):
+                 name_rotate=False):
 
         super(LocationPanel, self).__init__(name_rotate)
 
         self.color, self.fontsize = color, fontsize
+        self.name = None
 
     def get_config(self, feature, browser_config):
 
         return {'lines': 1}
 
     def _plot(self, ax, feature):
+
+        """Private method to actually do the plotting."""
 
         ax.spines['left'].set_visible(False)
         ax.spines['bottom'].set_visible(False)
@@ -48,6 +56,10 @@ class LocationPanel(Panel):
                 'data': None}
 
     def plot(self, ax, feature):
+
+        """Public method that sets the name of the panel to the chromosome
+        and calls the parent classes plot method (which in turn calls
+        the private _plot function"""
 
         self.name = feature.chrom
 
