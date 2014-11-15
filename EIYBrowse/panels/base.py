@@ -89,11 +89,15 @@ class FilePanel(Panel):
 
         """Create a new panel object with an attached datafile.
 
+        Essentially this class does the same work as :class:`Panel` except that
+        it first uses :func:`~EIYBrowse.filetypes.open_file` to create a
+        new file object and then attaches that object to self.datafile.
+
         :param str file_path: Path to the datafile location
         :param str file_type: String specifying the format of the datafile.
             The mapping between format specifiers and classes is defined by
             the EIYBrowse.filetypes entry point (see setuptools documentation
-            or :module:`EIYBrowse.filetypes` for more information.)
+            or :mod:`EIYBrowse.filetypes` for more information.)
         :param str name: Optional name label for the panel
         :param bool name_rotate: Whether the name label should be
             rotated 90 degrees
