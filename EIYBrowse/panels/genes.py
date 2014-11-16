@@ -9,10 +9,11 @@ def get_start_stop_on_axes(axes, interval):
     """Given a set of axes and a genomic interval, return
     the start and stop of the interval in axes co-ordinates
 
-    :param :class:`matplotlib.axes.AxesSubplot` axes: Set of matplotlib
-        axes to use as the bounding extent
-    :param :class:`pybedtools.Interval` interval: Genomic interval for which
-        to determine the extent in axis co-ordinates
+    :param plot_ax: Axes to plot the gene name label on
+    :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
+    :param interval: Genomic interval for which to determine the extent
+        in axis co-ordinates
+    :type interval: :class:`pybedtools.Interval`
     :returns: interval start and stop in axes co-ordinates (pair of floats)
     """
 
@@ -40,11 +41,11 @@ class GenePanel(FilePanel):
     The genes panel needs to have enough vertical space to display all
     of the genes over the requested region. Therefore, the list of genes
     and their positions must be retrieved *before* the figure axes are
-    set up. The panel therefore makes use of the :method:`get_config`
+    set up. The panel therefore makes use of the :meth:`get_config`
     method, which is always called before the plot is initiated.
 
     Once the list of genes is retrieved, we need to decide how to arrange
-    them without allowing them to overlap. The most difficult part of this
+    them without them overlapping. The most difficult part of this
     is ensuring that the name labels don't overlap.
     """
 
@@ -53,11 +54,12 @@ class GenePanel(FilePanel):
                  name=None, name_rotate=False,
                  **kwargs):
 
-        """Create a new gene panel.
+        """To create a new gene panel:
 
         :param datafile: Object providing access to the names and locations
-            of genes. At the moment only :class:`gffutils.FeatureDB` objects
-            are supported.
+            of genes. At the moment only
+            :class:`~EIYBrowse.filetypes.gffutils_db.GffutilsDb` objects are
+            supported.
         :param str color: Color specifier for the gene icons
         :param str name: Optional name label
         :param bool name_rotate: Whether to rotate the name label 90 degrees
@@ -76,20 +78,22 @@ class GenePanel(FilePanel):
         be assigned to this panel.
 
         Genes are retrieved from the backend by calling the
-        :meth:`EIYBrowse.filetypes.gffutils_db.GffutilsDb.get_genes` method
-        of the backend. :meth:`_get_gene_extents` iterates over the found
-        genes and returns the start/stop of the gene when plotted (including
-        the name label). Each gene is added to self.gene_rows, which is a
-        :class:`GeneRows` object that assigns each gene to a vertical row,
-        making sure that none of them overlap.
+        :meth:`EIYBrowse.filetypes.gffutils_db.GffutilsDb.get_genes` method of
+        the backend. The private :meth:`_get_gene_extents` method then iterates
+        over the found genes and returns the start/stop of the gene when
+        plotted (including the name label). Each gene is added to
+        self.gene_rows, which is a :class:`GeneRows` object that assigns each
+        gene to a vertical row, making sure that none of them overlap.
 
         Once all the rows are added, we return the total number of rows needed
         to arrange the genes without overlaps by calling :meth:`total_rows`.
 
-        :param :class:`pybedtools.Interval` feature: Genomic interval to
+        :param feature: Genomic interval to
             plot genes over.
-        :param :class:`~EIYBrowse.core.Browser` browser: Parent browser
+        :type feature: :class:`pybedtools.Interval`
+        :param browser: Parent browser
             object that will create the new plotting axis.
+        :type browser: :class:`~EIYBrowse.core.Browser`
         """
 
         self.gene_rows.rows = []
@@ -158,8 +162,8 @@ class GenePanel(FilePanel):
 
         """Plot the name label of the gene.
 
-        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
-            the gene name label on
+        :param plot_ax: Axes to plot the gene name label on
+        :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
         :param float start: Start position of the gene in axis co-ordinates
         :param str name: Name of the gene to be plotted
         :param float row_index: Vertical position of the row which the gene
@@ -182,9 +186,10 @@ class GenePanel(FilePanel):
         the current gene is then given by the top position of the current row
         (given by row_index) minus two fifths of the row span.
 
-        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
-            the gene name label on
-        :param :class:`pybedtools.Interval` gene: Gene object to be plotted
+        :param plot_ax: Axes to plot the gene name label on
+        :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
+        :param gene: Gene object to be plotted
+        :type gene: :class:`pybedtools.Interval`
         :param float row_index: Vertical position of the row which the gene
             is to be plotted to.
         """
@@ -213,9 +218,10 @@ class GenePanel(FilePanel):
         (row_index) minus one fifth of the row span, and the bottom
         is given by the row_index minus three fifths of the row span.
 
-        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
-            the gene name label on
-        :param :class:`pybedtools.Interval` gene: Gene object to be plotted
+        :param plot_ax: Axes to plot the gene name label on
+        :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
+        :param exon: Exon object to be plotted
+        :type exon: :class:`pybedtools.Interval`
         :param float row_index: Vertical position of the row which the gene
             is to be plotted to.
         """
@@ -240,19 +246,19 @@ class GenePanel(FilePanel):
         :class:`pybedtools.Interval` representing the entire gene, which is
         passed to :meth:`plot_gene_body`.
 
-        The 'exons' key should contain a list of :class:`pybedtools.Interval`s
-        representing each individual exon of the gene's longest isoform, which
-        are passed to :meth:`plot_exon`.
+        The 'exons' key should contain a list of :class:`pybedtools.Interval`
+        objects representing each individual exon of the gene's longest
+        isoform, which are passed to :meth:`plot_exon` if plot_exons is True.
 
         Finally, the name label of the gene is plotted by :meth:`plot_name`.
 
-        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
-            the gene name label on
+        :param plot_ax: Axes to plot the gene name label on
+        :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
         :param dict gene_dict: Dictionary containing the details of the gene
             to be plotted
-        :param bool exons: Whether to plot the exons
         :param float row_index: Vertical position of the row on which the gene
             is to be plotted
+        :param bool plot_exons: Whether to plot the exons
         """
 
         gene = gene_dict['gene']
@@ -306,7 +312,8 @@ class GeneRows(object):
         added genes. Then adds the gene to the returned row and updates
         the 'stop' key to reflect the new rightmost position in the row.
 
-        :param :class:`pybedtools.Interval` gene: Gene object to add
+        :param gene: Gene object to be plotted
+        :type gene: :class:`pybedtools.Interval`
         :param float start: Start position of the gene in axis co-ordinates
         :param float stop: Stop position of the gene in axis co-ordinates
         """
