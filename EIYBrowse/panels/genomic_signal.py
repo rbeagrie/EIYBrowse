@@ -6,13 +6,13 @@ class GenomicSignalPanel(FilePanel):
 
     """Panel for displaying a continuous signal accross a genomic region"""
 
-    def __init__(self, file_path, file_type,
+    def __init__(self, datafile,
                  bins=800, height=4,
                  color='#377eb8', negative_color=None,
                  ymin=None, ymax=None,
                  name=None, name_rotate=False):
 
-        super(GenomicSignalPanel, self).__init__(file_path, file_type, 
+        super(GenomicSignalPanel, self).__init__(datafile,
                                                  name, name_rotate)
 
         self.bins, self.height = bins, height

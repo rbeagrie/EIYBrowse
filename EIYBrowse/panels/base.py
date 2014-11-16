@@ -80,13 +80,27 @@ class Panel(object):
         """Private method to handle actual plotting. To be overwritten
         by a subclass"""
 
+    @classmethod
+    def from_config_dict(cls, **kwargs):
+
+        """Intantiating a panel object from the config file may require
+        instantiating some other objects first (namely datafiles).
+
+        For some panels, we don't need to do this, so we simpy return
+        an object of type cls with the arguments in kwargs.
+
+        Any subclass that needs some logic to be executed before
+        it can be instatiated should put that logic here.
+        """
+
+        return cls(**kwargs)
 
 class FilePanel(Panel):
 
     """Base class for browser panels that need external data"""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, file_path, file_type,
+    def __init__(self, datafile,
                  name=None, name_rotate=False):
 
         """Create a new panel object with an attached datafile.
@@ -95,11 +109,8 @@ class FilePanel(Panel):
         it first uses :func:`~EIYBrowse.filetypes.open_file` to create a
         new file object and then attaches that object to self.datafile.
 
-        :param str file_path: Path to the datafile location
-        :param str file_type: String specifying the format of the datafile.
-            The mapping between format specifiers and classes is defined by
-            the EIYBrowse.filetypes entry point (see setuptools documentation
-            or :mod:`EIYBrowse.filetypes` for more information.)
+        :param datafile: A datafile object which handles extracting
+            the data to plot for any given genomic region.
         :param str name: Optional name label for the panel
         :param bool name_rotate: Whether the name label should be
             rotated 90 degrees
@@ -107,5 +118,25 @@ class FilePanel(Panel):
 
         super(FilePanel, self).__init__(name, name_rotate)
 
-        self.datafile = open_file(file_path,
-                                  file_type)
+        self.datafile = datafile
+
+    @classmethod
+    def from_config_dict(cls, file_path, file_type,
+                               **kwargs):
+
+        """Instead of instantiating a new panel object with an open
+        datafile object, instead pass the path to the datafile and
+        the file_type string specifiying the class which handles that
+        file format. Open the datafile and instantiate the class with
+        the newly created datafile object.
+
+        :param str file_path: Path to the datafile location
+        :param str file_type: String specifying the format of the datafile.
+            The mapping between format specifiers and classes is defined by
+            the EIYBrowse.filetypes entry point (see setuptools documentation
+            or :mod:`EIYBrowse.filetypes` for more information.)
+        """
+
+        datafile = open_file(file_path, file_type)
+
+        return cls(datafile, **kwargs)

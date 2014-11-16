@@ -1,3 +1,5 @@
+"""The genes module defines a panel for plotting the position of genes"""
+
 from .base import FilePanel
 import itertools
 import numpy as np
@@ -6,16 +8,31 @@ import matplotlib.pyplot as plt
 
 class GenePanel(FilePanel):
 
-    """Panel for displaying a continuous signal (e.g. ChIP-seq) accross a genomic region"""
+    """Panel for displaying the position of genes and their introns/exons.
+    
+    The genes panel needs to have enough vertical space to display all
+    of the genes over the requested region. Therefore, the list of genes
+    and their positions must be retrieved *before* the figure axes are
+    set up. The panel therefore makes use of the :method:`get_config`
+    method, which is always called before the plot is initiated.
+    
+    Once the list of genes is retrieved, we need to decide how to arrange
+    them without allowing them to overlap. The most difficult part of this
+    is ensuring that the name labels don't overlap.
+    """
 
-    def __init__(self, file_path, file_type='gffutils_db',
-                 color='#377eb8', fontsize=10,
-                 name=None, name_rotate=False):
+    # Plotting requires a lot of parameters. I can't see a simple
+    # way of grouping these together at the moment.
+    # pylint: disable=too-many-arguments
+    def __init__(self, datafile,
+                 color='#377eb8',
+                 name=None, name_rotate=False,
+                 **kwargs):
 
-        self.color, self.fontsize = color, fontsize
-
-        super(GenePanel, self).__init__(file_path, file_type, 
+        super(GenePanel, self).__init__(datafile,
                                         name, name_rotate)
+
+        self.color, self.kwargs = color, kwargs
 
     def get_config(self, feature, browser_config):
 
@@ -24,7 +41,8 @@ class GenePanel(FilePanel):
         self.levels = GeneLevels()
 
         self.genes = list(self.iter_features(
-            self.datafile.region(feature, completely_within=False, featuretype='gene')))
+            self.datafile.region(feature, completely_within=False, 
+                                 featuretype='gene')))
 
         _fig = plt.figure(figsize=(16, 1))
         _ax = _fig.add_subplot(111)
@@ -81,7 +99,7 @@ class GenePanel(FilePanel):
 
         span = 1. / ix[1]
 
-        return ax.text(start, ix[0] - span, name, fontsize=self.fontsize)
+        return ax.text(start, ix[0] - span, name, **self.kwargs)
 
     def plot_gene(self, ax, gene, ix=(0, 1)):
 

@@ -50,13 +50,13 @@ class InteractionsPanel(FilePanel):
     """Base panel for displaying 3D interactions data 
     (e.g. Hi-C) across a genomic region"""
 
-    def __init__(self, file_path, file_type,
+    def __init__(self, datafile,
                  flip=False, log=False, rotate=True,
                  clip=1., clip_hard=None,
                  name=None, name_rotate=False,
                  **kwargs):
 
-        super(InteractionsPanel, self).__init__(file_path, file_type, 
+        super(InteractionsPanel, self).__init__(datafile,
                                                 name, name_rotate)
 
         self.flip, self.log, self.rotate = flip, log, rotate

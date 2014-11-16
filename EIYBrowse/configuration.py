@@ -46,10 +46,12 @@ def panel_from_panel_config(panel_config):
 
     panel_conf = panel_config.values()[0] or {}
 
+    panel_class = defined_panels[panel_type]
+
     # Star args are a necessary evil here, as all the configuration
     # options have to be in dictionary form
     # pylint: disable=star-args
-    return defined_panels[panel_type](**panel_conf)
+    return panel_class.from_config_dict(**panel_conf)
 
 
 def panels_from_config(config_dict):
