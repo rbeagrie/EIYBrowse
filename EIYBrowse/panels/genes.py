@@ -12,9 +12,10 @@ class GenePanel(FilePanel):
                  color='#377eb8', fontsize=10,
                  name=None, name_rotate=False):
 
-        self.color, self.name, self.fontsize = color, name, fontsize
+        self.color, self.fontsize = color, fontsize
 
-        super(GenePanel, self).__init__(file_path, file_type, name_rotate)
+        super(GenePanel, self).__init__(file_path, file_type, 
+                                        name, name_rotate)
 
     def get_config(self, feature, browser_config):
 

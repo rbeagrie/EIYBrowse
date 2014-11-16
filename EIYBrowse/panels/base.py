@@ -42,38 +42,40 @@ class Panel(object):
 
         return {}
 
-    def plot(self, ax, feature):
+    def plot(self, feature, plot_ax, label_ax=None):
 
         """Public method called when we need to plot the panel to an
         axis. Sets up the axes, plots the name label if specified, and
         passes the rest of the work to the :meth:`_plot` method.
 
-        :param ax: tuple of matplotlib axes to plot to. The first is the
-            name label axis and the second is the main plotting axis.
         :param feature: Genomic region to plot.
         :type feature: :class:`pybedtools.Interval`
+        :param plot_ax: Axis for plotting the data
+        :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
+        :param label_ax: Axis for plotting the name label
+        :type label_ax: :class:`matplotlib.axes.AxesSubplot`
         """
 
-        label_ax, plot_ax = ax
+        if label_ax is not None:
 
-        label_ax.set_axis_off()
+            label_ax.set_axis_off()
 
-        if hasattr(self, 'name') and not self.name is None:
-            if self.name_rotate:
-                label_ax.text(0.5, 0.5, self.name,
-                              horizontalalignment='center',
-                              verticalalignment='center',
-                              fontsize=12, rotation=90)
-            else:
-                label_ax.text(0.5, 0.5, self.name,
-                              horizontalalignment='center',
-                              verticalalignment='center',
-                              fontsize=12)
+            if hasattr(self, 'name') and not self.name is None:
+                if self.name_rotate:
+                    label_ax.text(0.5, 0.5, self.name,
+                                  horizontalalignment='center',
+                                  verticalalignment='center',
+                                  fontsize=12, rotation=90)
+                else:
+                    label_ax.text(0.5, 0.5, self.name,
+                                  horizontalalignment='center',
+                                  verticalalignment='center',
+                                  fontsize=12)
 
         return self._plot(plot_ax, feature)
 
     @abc.abstractmethod
-    def _plot(self, ax, feature):
+    def _plot(self, plot_ax, feature):
 
         """Private method to handle actual plotting. To be overwritten
         by a subclass"""
@@ -103,7 +105,7 @@ class FilePanel(Panel):
             rotated 90 degrees
         """
 
-        super(FilePanel, self).__init__(name_rotate)
+        super(FilePanel, self).__init__(name, name_rotate)
 
         self.datafile = open_file(file_path,
                                   file_type)

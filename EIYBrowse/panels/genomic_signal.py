@@ -12,7 +12,8 @@ class GenomicSignalPanel(FilePanel):
                  ymin=None, ymax=None,
                  name=None, name_rotate=False):
 
-        super(GenomicSignalPanel, self).__init__(file_path, file_type, name_rotate)
+        super(GenomicSignalPanel, self).__init__(file_path, file_type, 
+                                                 name, name_rotate)
 
         self.bins, self.height = bins, height
         self.color, self.negative_color = color, negative_color

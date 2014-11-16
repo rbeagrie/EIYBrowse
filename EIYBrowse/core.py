@@ -39,11 +39,12 @@ def make_frame(panel, total_lines, frame_lines, line_index):
     label_ax = plt.subplot2grid((total_lines, 10), (line_index, 0),
                                 rowspan=frame_lines,)
 
-    data_ax = plt.subplot2grid((total_lines, 10), (line_index, 1),
+    plot_ax = plt.subplot2grid((total_lines, 10), (line_index, 1),
                                rowspan=frame_lines, colspan=9)
 
     frame_dict = {'panel': panel,
-                  'axes': (label_ax, data_ax)}
+                  'plot_ax': plot_ax,
+                  'label_ax': label_ax}
 
     return frame_dict
 
@@ -112,7 +113,9 @@ class Plot(object):
 
         for frame in self.frames:
 
-            frame['results'] = frame['panel'].plot(frame['axes'], interval)
+            frame['results'] = frame['panel'].plot(interval,
+                                                   frame['plot_ax'],
+                                                   frame['label_ax'])
 
 
 class Browser(object):

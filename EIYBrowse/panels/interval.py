@@ -11,7 +11,8 @@ class GenomicIntervalPanel(FilePanel):
                  jitter=0.0,
                  name=None, name_rotate=False):
 
-        super(GenomicIntervalPanel, self).__init__(file_path, file_type, name_rotate)
+        super(GenomicIntervalPanel, self).__init__(file_path, file_type, 
+                                                   name, name_rotate)
 
         self.color, self.colors, self.fontsize = color, colors, fontsize
         self.jitter = jitter

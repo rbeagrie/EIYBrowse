@@ -56,7 +56,8 @@ class InteractionsPanel(FilePanel):
                  name=None, name_rotate=False,
                  **kwargs):
 
-        super(InteractionsPanel, self).__init__(file_path, file_type, name_rotate)
+        super(InteractionsPanel, self).__init__(file_path, file_type, 
+                                                name, name_rotate)
 
         self.flip, self.log, self.rotate = flip, log, rotate
         self.clip, self.clip_hard = clip, clip_hard

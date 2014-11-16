@@ -15,7 +15,7 @@ class LocationPanel(Panel):
     def __init__(self, color='#000000', fontsize=10,
                  name_rotate=False):
 
-        super(LocationPanel, self).__init__(name_rotate)
+        super(LocationPanel, self).__init__(name_rotate=name_rotate)
 
         self.color, self.fontsize = color, fontsize
         self.name = None
@@ -55,7 +55,7 @@ class LocationPanel(Panel):
         return {'patches': None,
                 'data': None}
 
-    def plot(self, ax, feature):
+    def plot(self, feature, plot_ax, label_ax=None):
 
         """Public method that sets the name of the panel to the chromosome
         and calls the parent classes plot method (which in turn calls
@@ -63,4 +63,4 @@ class LocationPanel(Panel):
 
         self.name = feature.chrom
 
-        super(LocationPanel, self).plot(ax, feature)
+        super(LocationPanel, self).plot(feature, plot_ax, label_ax)
