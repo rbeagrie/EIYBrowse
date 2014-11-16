@@ -4,7 +4,7 @@ file divides the chromosome into a number of bins, and the interaction
 between all pairs of bins is represented as a tab-delimited matrix.
 
 These folders of files can be used as input to the
-:class:`~EIYBrowse.panels.interactions.InteractionsPanel` class.
+:class:`~EIYBrowse.tracks.interactions.InteractionsTrack` class.
 """
 
 import os
@@ -171,7 +171,7 @@ class My5cFile(object):
 
         In order to adjust the size of the returned array to match the
         boundaries of the plotting window, the
-        :class:`~EIYBrowse.panels.interactions.InteractionsPanel` must
+        :class:`~EIYBrowse.tracks.interactions.InteractionsTrack` must
         be given the exact start and stop of the region returned from the
         array. This method finds these values for a given pair of indices.
 

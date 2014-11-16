@@ -1,6 +1,6 @@
-"""The genes module defines a panel for plotting the position of genes"""
+"""The genes module defines a track for plotting the position of genes"""
 
-from .base import FilePanel
+from .base import FileTrack
 import matplotlib.pyplot as plt
 
 
@@ -34,14 +34,14 @@ def get_start_stop_on_axes(axes, interval):
     return iv_start, iv_stop
 
 
-class GenePanel(FilePanel):
+class GeneTrack(FileTrack):
 
-    """Panel for displaying the position of genes and their introns/exons.
+    """Track for displaying the position of genes and their introns/exons.
 
-    The genes panel needs to have enough vertical space to display all
+    The genes track needs to have enough vertical space to display all
     of the genes over the requested region. Therefore, the list of genes
     and their positions must be retrieved *before* the figure axes are
-    set up. The panel therefore makes use of the :meth:`get_config`
+    set up. The track therefore makes use of the :meth:`get_config`
     method, which is always called before the plot is initiated.
 
     Once the list of genes is retrieved, we need to decide how to arrange
@@ -54,7 +54,7 @@ class GenePanel(FilePanel):
                  name=None, name_rotate=False,
                  **kwargs):
 
-        """To create a new gene panel:
+        """To create a new gene track:
 
         :param datafile: Object providing access to the names and locations
             of genes. At the moment only
@@ -65,7 +65,7 @@ class GenePanel(FilePanel):
         :param bool name_rotate: Whether to rotate the name label 90 degrees
         """
 
-        super(GenePanel, self).__init__(datafile,
+        super(GeneTrack, self).__init__(datafile,
                                         name, name_rotate)
 
         self.color, self.kwargs = color, kwargs
@@ -75,7 +75,7 @@ class GenePanel(FilePanel):
     def get_config(self, region, browser_config):
 
         """Calculate the number of vertial rows needed in the axis that will
-        be assigned to this panel.
+        be assigned to this track.
 
         Genes are retrieved from the backend by calling the
         :meth:`EIYBrowse.filetypes.gffutils_db.GffutilsDb.get_genes` method of

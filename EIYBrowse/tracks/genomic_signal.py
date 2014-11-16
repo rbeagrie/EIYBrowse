@@ -1,10 +1,10 @@
-from .base import FilePanel
+from .base import FileTrack
 import numpy as np
 
 
-class GenomicSignalPanel(FilePanel):
+class GenomicSignalTrack(FileTrack):
 
-    """Panel for displaying a continuous signal accross a genomic region"""
+    """Track for displaying a continuous signal accross a genomic region"""
 
     def __init__(self, datafile,
                  bins=800, height=4,
@@ -12,7 +12,7 @@ class GenomicSignalPanel(FilePanel):
                  ymin=None, ymax=None,
                  name=None, name_rotate=False):
 
-        super(GenomicSignalPanel, self).__init__(datafile,
+        super(GenomicSignalTrack, self).__init__(datafile,
                                                  name, name_rotate)
 
         self.bins, self.height = bins, height

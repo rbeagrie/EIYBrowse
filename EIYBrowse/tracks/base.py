@@ -1,33 +1,33 @@
-"""The panels.base module defines abstract base classes, which
-should be subclassed to create new panels.
+"""The tracks.base module defines abstract base classes, which
+should be subclassed to create new tracks.
 
-The :class:`Panel` class should be chosen as a base class if
-the panel does not rely on any external data (e.g. if you want
+The :class:`Track` class should be chosen as a base class if
+the track does not rely on any external data (e.g. if you want
 to plot a scale bar.
 
-The :class:`FilePanel` class should be chosen as a base class
-if the panel does rely on some external data file.
+The :class:`FileTrack` class should be chosen as a base class
+if the track does rely on some external data file.
 """
 
 from ..filetypes import open_file
 import abc
 
 
-class Panel(object):
+class Track(object):
 
-    """Base class for all browser panels"""
+    """Base class for all browser tracks"""
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, name=None, name_rotate=False):
 
-        """Create a new panel object.
+        """Create a new track object.
 
-        :param str name: Optional name label for the panel
+        :param str name: Optional name label for the track
         :param bool name_rotate: Whether the name label should be
             rotated 90 degrees
         """
 
-        super(Panel, self).__init__()
+        super(Track, self).__init__()
 
         self.name = name
         self.name_rotate = name_rotate
@@ -44,7 +44,7 @@ class Panel(object):
 
     def plot(self, region, plot_ax, label_ax=None):
 
-        """Public method called when we need to plot the panel to an
+        """Public method called when we need to plot the track to an
         axis. Sets up the axes, plots the name label if specified, and
         passes the rest of the work to the :meth:`_plot` method.
 
@@ -83,10 +83,10 @@ class Panel(object):
     @classmethod
     def from_config_dict(cls, **kwargs):
 
-        """Intantiating a panel object from the config file may require
+        """Intantiating a track object from the config file may require
         instantiating some other objects first (namely datafiles).
 
-        For some panels, we don't need to do this, so we simpy return
+        For some tracks, we don't need to do this, so we simpy return
         an object of type cls with the arguments in kwargs.
 
         Any subclass that needs some logic to be executed before
@@ -95,28 +95,28 @@ class Panel(object):
 
         return cls(**kwargs)
 
-class FilePanel(Panel):
+class FileTrack(Track):
 
-    """Base class for browser panels that need external data"""
+    """Base class for browser tracks that need external data"""
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, datafile,
                  name=None, name_rotate=False):
 
-        """Create a new panel object with an attached datafile.
+        """Create a new track object with an attached datafile.
 
-        Essentially this class does the same work as :class:`Panel` except that
+        Essentially this class does the same work as :class:`Track` except that
         it first uses :func:`~EIYBrowse.filetypes.open_file` to create a
         new file object and then attaches that object to self.datafile.
 
         :param datafile: A datafile object which handles extracting
             the data to plot for any given genomic region.
-        :param str name: Optional name label for the panel
+        :param str name: Optional name label for the track
         :param bool name_rotate: Whether the name label should be
             rotated 90 degrees
         """
 
-        super(FilePanel, self).__init__(name, name_rotate)
+        super(FileTrack, self).__init__(name, name_rotate)
 
         self.datafile = datafile
 
@@ -124,7 +124,7 @@ class FilePanel(Panel):
     def from_config_dict(cls, file_path, file_type,
                                **kwargs):
 
-        """Instead of instantiating a new panel object with an open
+        """Instead of instantiating a new track object with an open
         datafile object, instead pass the path to the datafile and
         the file_type string specifiying the class which handles that
         file format. Open the datafile and instantiate the class with

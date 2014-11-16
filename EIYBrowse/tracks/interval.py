@@ -1,9 +1,9 @@
-from .base import FilePanel
+from .base import FileTrack
 
 
-class GenomicIntervalPanel(FilePanel):
+class GenomicIntervalTrack(FileTrack):
 
-    """Panel for displaying a discrete signal 
+    """Track for displaying a discrete signal 
     (e.g. a bed file of binding peaks) accross a genomic region"""
 
     def __init__(self, datafile,
@@ -11,7 +11,7 @@ class GenomicIntervalPanel(FilePanel):
                  jitter=0.0,
                  name=None, name_rotate=False):
 
-        super(GenomicIntervalPanel, self).__init__(datafile,
+        super(GenomicIntervalTrack, self).__init__(datafile,
                                                    name, name_rotate)
 
         self.color, self.colors, self.fontsize = color, colors, fontsize

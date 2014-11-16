@@ -1,16 +1,16 @@
-from .base import Panel
+from .base import Track
 from ..utils import format_genomic_distance
 import numpy as np
 
 
-class ScaleBarPanel(Panel):
+class ScaleBarTrack(Track):
 
-    """Panel for displaying a scale bar"""
+    """Track for displaying a scale bar"""
 
     def __init__(self, color='#000000', fontsize=10,
                  name=None, name_rotate=False):
 
-        super(ScaleBarPanel, self).__init__(name, name_rotate)
+        super(ScaleBarTrack, self).__init__(name, name_rotate)
 
         self.color, self.fontsize = color, fontsize
 

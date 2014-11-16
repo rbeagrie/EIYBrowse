@@ -6,7 +6,7 @@ from pandas.io import sql
 
 class InteractionsDbFile(object):
 
-    """Panel for displaying a continuous signal across a genomic region"""
+    """Track for displaying a continuous signal across a genomic region"""
 
     def __init__(self, interactions_db):
         super(InteractionsDbFile, self).__init__()

@@ -1,4 +1,4 @@
-from .base import FilePanel
+from .base import FileTrack
 from PIL import Image
 import numpy as np
 
@@ -45,9 +45,9 @@ def rotate_to_fit_ax(ax, data, flip=False):
     return rot
 
 
-class InteractionsPanel(FilePanel):
+class InteractionsTrack(FileTrack):
 
-    """Base panel for displaying 3D interactions data 
+    """Base track for displaying 3D interactions data 
     (e.g. Hi-C) across a genomic region"""
 
     def __init__(self, datafile,
@@ -56,7 +56,7 @@ class InteractionsPanel(FilePanel):
                  name=None, name_rotate=False,
                  **kwargs):
 
-        super(InteractionsPanel, self).__init__(datafile,
+        super(InteractionsTrack, self).__init__(datafile,
                                                 name, name_rotate)
 
         self.flip, self.log, self.rotate = flip, log, rotate
