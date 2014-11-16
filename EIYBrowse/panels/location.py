@@ -20,11 +20,11 @@ class LocationPanel(Panel):
         self.color, self.fontsize = color, fontsize
         self.name = None
 
-    def get_config(self, feature, browser_config):
+    def get_config(self, region, browser_config):
 
-        return {'lines': 1}
+        return {'rows': 1}
 
-    def _plot(self, ax, feature):
+    def _plot(self, ax, region):
 
         """Private method to actually do the plotting."""
 
@@ -38,7 +38,7 @@ class LocationPanel(Panel):
 
         ax.tick_params(direction='in', pad=-15)
 
-        ax.set_xlim(feature.start, feature.end)
+        ax.set_xlim(region.start, region.end)
         tick_locations = ax.xaxis.get_ticklocs()
         precision = 0
         while True:
@@ -55,12 +55,12 @@ class LocationPanel(Panel):
         return {'patches': None,
                 'data': None}
 
-    def plot(self, feature, plot_ax, label_ax=None):
+    def plot(self, region, plot_ax, label_ax=None):
 
         """Public method that sets the name of the panel to the chromosome
         and calls the parent classes plot method (which in turn calls
         the private _plot function"""
 
-        self.name = feature.chrom
+        self.name = region.chrom
 
-        super(LocationPanel, self).plot(feature, plot_ax, label_ax)
+        super(LocationPanel, self).plot(region, plot_ax, label_ax)

@@ -48,25 +48,25 @@ class InteractionsDbFile(object):
         loc = sql.read_sql(self.loc_query.format(chrom=chrom, i=i), self.db)
         return tuple(loc.values[0])
 
-    def bins_from_feature(self, feature):
+    def bins_from_region(self, region):
 
-        start_bin = self.get_bin_from_location(feature.chrom, feature.start)
-        stop_bin = self.get_bin_from_location(feature.chrom, feature.stop)
+        start_bin = self.get_bin_from_location(region.chrom, region.start)
+        stop_bin = self.get_bin_from_location(region.chrom, region.stop)
 
-        return feature.chrom, start_bin, stop_bin
+        return region.chrom, start_bin, stop_bin
 
-    def feature_from_bins(self, chrom, start_bin, stop_bin):
+    def region_from_bins(self, chrom, start_bin, stop_bin):
 
         lstart, lstop = self.get_location_from_bin(chrom, start_bin)
         rstart, rstop = self.get_location_from_bin(chrom, stop_bin)
 
         return pybedtools.Interval(chrom, lstart, rstop)
 
-    def interactions(self, feature):
+    def interactions(self, region):
 
-        chrom, start, stop = self.bins_from_feature(feature)
+        chrom, start, stop = self.bins_from_region(region)
 
         data = self.get_data_from_bins(chrom, start, stop)
-        new_feature = self.feature_from_bins(chrom, start, stop)
+        new_region = self.region_from_bins(chrom, start, stop)
 
-        return data, new_feature
+        return data, new_region

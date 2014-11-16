@@ -102,12 +102,12 @@ class My5cFile(object):
         self.interactions = np.array(data)
         self.windows = format_windows(data.index)
 
-    def index_from_interval(self, feature):
+    def index_from_interval(self, region):
 
         """Convert a :class:`pybedtools.Interval` object into a start
         and stop index for the internal numpy array.
 
-        We select all the bins overlapping the feature from the windows
+        We select all the bins overlapping the region from the windows
         :class:`~pandas.DataFrame` by searching for bins whose stop
         co-ordinate is larger than the start co-ordinate of the interval
         and whose start co-ordinate is less than the stop co-ordinate
@@ -115,46 +115,46 @@ class My5cFile(object):
         window, and the last covered window + 1 (as slicing the numpy
         array will return up to but not including the last index).
 
-        :param feature: Genomic region to convert to an index
-        :type feature: :class:`pybedtools.Interval`
+        :param region: Genomic region to convert to an index
+        :type region: :class:`pybedtools.Interval`
         :returns: Start and stop array indices as integers.
         """
 
-        if not feature.start < feature.stop:
+        if not region.start < region.stop:
             raise ValueError(
                 'Interval start {0} larger than interval end {1}'.format(
-                    feature.start, feature.stop))
+                    region.start, region.stop))
 
         window_in_region = (
-            (self.windows.get_level_values('stop') > feature.start) &
-            (self.windows.get_level_values('start') < feature.stop) &
-            (self.windows.get_level_values('chrom') == feature.chrom))
+            (self.windows.get_level_values('stop') > region.start) &
+            (self.windows.get_level_values('start') < region.stop) &
+            (self.windows.get_level_values('chrom') == region.chrom))
 
         covered_windows = np.nonzero(window_in_region)[0]
 
         if not len(covered_windows):
-            if not feature.chrom in self.windows.levels[0]:
+            if not region.chrom in self.windows.levels[0]:
                 raise InvalidChromError(
                     '{0} not found in the list of windows'.format(
-                        feature.chrom))
+                        region.chrom))
 
         start_index = covered_windows[0]
         stop_index = covered_windows[-1] + 1
 
         return start_index, stop_index
 
-    def get_interactions(self, feature):
+    def get_interactions(self, region):
 
         """Get the interactions within a given genomic region.
 
-        :param feature: Genomic region to convert to an index
-        :type feature: :class:`pybedtools.Interval`
+        :param region: Genomic region to convert to an index
+        :type region: :class:`pybedtools.Interval`
         :returns: numpy array containing the interaction data,
             and a :class:`pybedtools.Interval` object giving the genomic
             co-ordinates of the returned array.
         """
 
-        start, stop = self.index_from_interval(feature)
+        start, stop = self.index_from_interval(region)
 
         return (self.interactions[start:stop, start:stop],
                 self.indices_to_interval(start, stop))
@@ -257,7 +257,7 @@ class My5CFolder(object):
 
         return self.file_class(my5c_path)
 
-    def interactions(self, feature):
+    def interactions(self, region):
 
         """Return the interactions inside the specified region.
 
@@ -266,13 +266,13 @@ class My5CFolder(object):
         call the object's get_interactions method to obtain a numpy
         array of the interactions within the specified region.
 
-        :param feature: Genomic region to convert to an index
-        :type feature: :class:`pybedtools.Interval`
+        :param region: Genomic region to convert to an index
+        :type region: :class:`pybedtools.Interval`
         :returns: numpy array containing the interaction data,
             and a :class:`pybedtools.Interval` object giving the genomic
             co-ordinates of the returned array.
         """
 
-        my5c_file = self.get_my5c_file(feature.chrom)
+        my5c_file = self.get_my5c_file(region.chrom)
 
-        return my5c_file.get_interactions(feature)
+        return my5c_file.get_interactions(region)

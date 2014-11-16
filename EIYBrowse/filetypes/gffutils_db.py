@@ -23,21 +23,21 @@ class GffutilsDb(object):
 
         self.gene_db = gffutils.FeatureDB(db_path)
 
-    def get_genes(self, feature):
+    def get_genes(self, region):
 
         """Iterator returning information about genes in the genomic region
-        specified by feature. For every gene in the identified region,
+        specified by region. For every gene in the identified region,
         the iterator should return a dictionary with two keys: 'gene' and
         'exons'. 'gene' should be a :class:`pybedtools.Interval` object
         giving the genomic span of the entire gene. 'exons' should be
         a list of :class:`pybedtools.Interval` objects giving the genomic
         span of each exon in the longest isoform of the gene.
 
-        :param feature: Genomic region to convert to an index
-        :type feature: :class:`pybedtools.Interval`
+        :param region: Genomic region to convert to an index
+        :type region: :class:`pybedtools.Interval`
         """
 
-        gene_information = self.gene_db.region(feature,
+        gene_information = self.gene_db.region(region,
                                                completely_within=False,
                                                featuretype='gene')
 

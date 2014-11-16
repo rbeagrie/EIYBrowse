@@ -11,7 +11,7 @@ different genomic regions.
 import matplotlib.pyplot as plt
 
 
-def make_frame(panel, total_lines, frame_lines, line_index):
+def make_frame(panel, total_rows, frame_rows, row_index):
     """Make a new frame to add to the current plot.
 
     Uses matplotlib's gridspec to create two new subplots. label_ax
@@ -23,12 +23,12 @@ def make_frame(panel, total_lines, frame_lines, line_index):
     :param panel: The :class:`~EIYBrowse.panels.base.Panel` instance
         which will control plotting to this frame.
     :type panel: Subclass of :class:`~EIYBrowse.panels.base.Panel`.
-    :param int total_lines: The total number of horizontal lines in
+    :param int total_rows: The total number of horizontal rows in
         the current plot.
-    :param int frame_lines: The number of horizontal lines occupied by
+    :param int frame_rows: The number of horizontal rows occupied by
         this frame
-    :param int line_index: The 0-based index of the first horizontal
-        line occupied by this frame.
+    :param int row_index: The 0-based index of the first horizontal
+        row occupied by this frame.
 
     :returns: Dictionary containing the panel and the
         newly created plotting axes.
@@ -36,11 +36,11 @@ def make_frame(panel, total_lines, frame_lines, line_index):
 
     """
 
-    label_ax = plt.subplot2grid((total_lines, 10), (line_index, 0),
-                                rowspan=frame_lines,)
+    label_ax = plt.subplot2grid((total_rows, 10), (row_index, 0),
+                                rowspan=frame_rows,)
 
-    plot_ax = plt.subplot2grid((total_lines, 10), (line_index, 1),
-                               rowspan=frame_lines, colspan=9)
+    plot_ax = plt.subplot2grid((total_rows, 10), (row_index, 1),
+                               rowspan=frame_rows, colspan=9)
 
     frame_dict = {'panel': panel,
                   'plot_ax': plot_ax,
@@ -57,31 +57,31 @@ class Plot(object):
     method is called, a new Plot object is generated to hold
     references to all of the output."""
 
-    def __init__(self, figwidth, total_lines, lineheight):
+    def __init__(self, figwidth, total_rows, rowheight):
         """Create a new plot object:
 
         :param int figwidth: Width of the plotting figure
-        :param int total_lines: Total number of horizontal lines
+        :param int total_rows: Total number of horizontal rows
             required by all the panels.
-        :param int lineheight: Height of each horizontal line
+        :param int rowheight: Height of each horizontal row
 
         """
 
         super(Plot, self).__init__()
 
         self.frames = []
-        self.line_index = 0
+        self.row_index = 0
 
-        self.total_lines = total_lines
+        self.total_rows = total_rows
         self.figwidth = figwidth
-        self.lineheight = lineheight
+        self.rowheight = rowheight
 
         self.figure = self._make_figure()
 
     def _make_figure(self):
         """Create a new Figure instance to plot to."""
 
-        figheight = self.total_lines * self.lineheight
+        figheight = self.total_rows * self.rowheight
 
         return plt.figure(figsize=(self.figwidth, figheight))
 
@@ -97,23 +97,23 @@ class Plot(object):
         """
 
         new_frame = make_frame(panel,
-                               self.total_lines, panel_config['lines'],
-                               self.line_index)
+                               self.total_rows, panel_config['rows'],
+                               self.row_index)
 
         self.frames.append(new_frame)
-        self.line_index += panel_config['lines']
+        self.row_index += panel_config['rows']
 
-    def do_plot(self, interval):
-        """Plot the data for all frames over a region specified by interval.
+    def do_plot(self, region):
+        """Plot the data for all frames over a region specified by region.
 
-        :param interval: Genomic region to plot data for.
-        :type interval: :class:`pybedtools.Interval`
+        :param region: Genomic region to plot data for.
+        :type region: :class:`pybedtools.Interval`
 
         """
 
         for frame in self.frames:
 
-            frame['results'] = frame['panel'].plot(interval,
+            frame['results'] = frame['panel'].plot(region,
                                                    frame['plot_ax'],
                                                    frame['label_ax'])
 
@@ -122,13 +122,13 @@ class Browser(object):
     """Browser stores the plotting panels and controls panel position/style"""
 
     def __init__(self, panels=None,
-                 width=16, lineheight=.5):
+                 width=16, rowheight=.5):
         """Create a new EIYBrowse Browser.
 
         :param list panels: A list of :class:`~EIYBrowse.panels.base.Panel`
             objects to handle the plotting.
         :param float width: Width of the browser window
-        :param float lineheight: Height of each horizontal line in the browser.
+        :param float rowheight: Height of each horizontal row in the browser.
         """
 
         super(Browser, self).__init__()
@@ -136,7 +136,7 @@ class Browser(object):
         # If panels param is not None, use that. Else use emtpy list.
         self.panels = panels or []
 
-        self.width, self.lineheight = width, lineheight
+        self.width, self.rowheight = width, rowheight
 
 
     def setup_plot(self, panel_configs):
@@ -153,10 +153,10 @@ class Browser(object):
         :rtype: :class:`Plot`
         """
 
-        total_lines = sum([p['lines'] for p in panel_configs])
+        total_rows = sum([p['rows'] for p in panel_configs])
 
         plot = Plot(self.width,
-                    total_lines, self.lineheight)
+                    total_rows, self.rowheight)
 
         for panel, panel_config in zip(self.panels, panel_configs):
 
@@ -164,19 +164,19 @@ class Browser(object):
 
         return plot
 
-    def plot(self, interval):
+    def plot(self, region):
         """Plot all panels given a interval object for window size
 
-        :param interval: Genomic region to plot data for.
-        :type interval: :class:`pybedtools.Interval`
+        :param region: Genomic region to plot data for.
+        :type region: :class:`pybedtools.Interval`
 
         """
 
-        panel_configs = [p.get_config(interval, self)
+        panel_configs = [p.get_config(region, self)
                          for p in self.panels]
 
         plot = self.setup_plot(panel_configs)
 
-        plot.do_plot(interval)
+        plot.do_plot(region)
 
         return plot

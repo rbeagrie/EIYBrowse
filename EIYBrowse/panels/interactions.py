@@ -64,15 +64,15 @@ class InteractionsPanel(FilePanel):
         self.kwargs = kwargs
 
 
-    def get_config(self, feature, browser):
+    def get_config(self, region, browser):
 
-        lines_wide = browser.width / browser.lineheight
+        rows_wide = browser.width / browser.rowheight
         if self.rotate:
-            needed_lines = lines_wide / 2.
+            needed_rows = rows_wide / 2.
         else:
-            needed_lines = lines_wide
+            needed_rows = rows_wide
 
-        return {'lines': int(needed_lines)}
+        return {'rows': int(needed_rows)}
 
     def clip_for_plotting(self, array, percentile=1.):
 
@@ -83,13 +83,13 @@ class InteractionsPanel(FilePanel):
             array[array < self.clip_hard] = np.NAN
         return np.clip(array, clip_lower, clip_upper)
 
-    def _plot(self, ax, feature):
+    def _plot(self, ax, region):
 
-        data, new_feature = self.datafile.interactions(feature)
+        data, new_region = self.datafile.interactions(region)
 
         self.plot_matrix(ax, data)
 
-        return new_feature
+        return new_region
 
     def plot_matrix(self, ax, data):
 

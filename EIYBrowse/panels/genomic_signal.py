@@ -19,16 +19,16 @@ class GenomicSignalPanel(FilePanel):
         self.color, self.negative_color = color, negative_color
         self.ymin, self.ymax = ymin, ymax
 
-    def get_config(self, feature, browser_config):
+    def get_config(self, region, browser_config):
 
-        return {'lines': self.height}
+        return {'rows': self.height}
 
-    def _plot(self, ax, feature):
+    def _plot(self, ax, region):
 
         ax.set_axis_off()
 
         sig_x, sig_y = self.datafile.local_coverage(
-            feature, bins=self.bins)
+            region, bins=self.bins)
 
         if self.negative_color is not None:
             pos_y = sig_y.copy()
@@ -49,7 +49,7 @@ class GenomicSignalPanel(FilePanel):
 
             patches = ax.fill_between(sig_x, sig_y, color=self.color)
 
-        ax.set_xlim(feature.start, feature.stop)
+        ax.set_xlim(region.start, region.stop)
         bottom, top = ax.get_ylim()
         if not self.ymin is None:
             bottom = self.ymin

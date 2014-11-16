@@ -72,7 +72,7 @@ class GenePanel(FilePanel):
 
         self.gene_rows = GeneRows()
 
-    def get_config(self, feature, browser_config):
+    def get_config(self, region, browser_config):
 
         """Calculate the number of vertial rows needed in the axis that will
         be assigned to this panel.
@@ -88,9 +88,9 @@ class GenePanel(FilePanel):
         Once all the rows are added, we return the total number of rows needed
         to arrange the genes without overlaps by calling :meth:`total_rows`.
 
-        :param feature: Genomic interval to
+        :param region: Genomic interval to
             plot genes over.
-        :type feature: :class:`pybedtools.Interval`
+        :type region: :class:`pybedtools.Interval`
         :param browser: Parent browser
             object that will create the new plotting axis.
         :type browser: :class:`~EIYBrowse.core.Browser`
@@ -98,13 +98,13 @@ class GenePanel(FilePanel):
 
         self.gene_rows.rows = []
 
-        genes = self.datafile.get_genes(feature)
+        genes = self.datafile.get_genes(region)
 
-        for gene, start, stop in self._get_gene_extents(feature, genes):
+        for gene, start, stop in self._get_gene_extents(region, genes):
 
             self.gene_rows.add_gene(gene, start, stop)
 
-        return {'lines': self.total_rows()}
+        return {'rows': self.total_rows()}
 
     def total_rows(self):
 
@@ -116,7 +116,7 @@ class GenePanel(FilePanel):
 
         return len(self.gene_rows.rows) or 1
 
-    def _get_gene_extents(self, feature, genes):
+    def _get_gene_extents(self, region, genes):
 
         """Private method that iterates over genes and calculates the
         axis space that they will need to occupy, including their name label.
@@ -131,7 +131,7 @@ class GenePanel(FilePanel):
 
         _figure = plt.figure(figsize=(16, 1))
         _plot_axis = _figure.add_subplot(111)
-        _plot_axis.set_xlim(feature.start, feature.stop)
+        _plot_axis.set_xlim(region.start, region.stop)
         _renderer = _figure.canvas.get_renderer()
 
         for gene in genes:
@@ -274,14 +274,14 @@ class GenePanel(FilePanel):
 
         return gene_body_patch, name_label_patch
 
-    def _plot(self, plot_ax, feature):
+    def _plot(self, plot_ax, region):
 
         """Private method which plots all the genes over the specified
         interval.
         """
 
         plot_ax.axis('off')
-        plot_ax.set_xlim(feature.start, feature.stop)
+        plot_ax.set_xlim(region.start, region.stop)
         plot_ax.set_ylim(0, 1)
 
         for i, gene_row in enumerate(self.gene_rows.rows):

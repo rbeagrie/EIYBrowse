@@ -35,21 +35,21 @@ class Panel(object):
     # Some classes won't need to do anything here, and can leave
     # this as it is. So we need to disable some warnings:
     # pylint: disable=unused-argument, no-self-use
-    def get_config(self, feature, browser_config):
+    def get_config(self, region, browser_config):
 
         """Any subclass that needs to do setup before the axes
         are created should place that code here."""
 
         return {}
 
-    def plot(self, feature, plot_ax, label_ax=None):
+    def plot(self, region, plot_ax, label_ax=None):
 
         """Public method called when we need to plot the panel to an
         axis. Sets up the axes, plots the name label if specified, and
         passes the rest of the work to the :meth:`_plot` method.
 
-        :param feature: Genomic region to plot.
-        :type feature: :class:`pybedtools.Interval`
+        :param region: Genomic region to plot.
+        :type region: :class:`pybedtools.Interval`
         :param plot_ax: Axis for plotting the data
         :type plot_ax: :class:`matplotlib.axes.AxesSubplot`
         :param label_ax: Axis for plotting the name label
@@ -72,10 +72,10 @@ class Panel(object):
                                   verticalalignment='center',
                                   fontsize=12)
 
-        return self._plot(plot_ax, feature)
+        return self._plot(plot_ax, region)
 
     @abc.abstractmethod
-    def _plot(self, plot_ax, feature):
+    def _plot(self, plot_ax, region):
 
         """Private method to handle actual plotting. To be overwritten
         by a subclass"""

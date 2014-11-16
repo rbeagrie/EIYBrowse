@@ -17,20 +17,20 @@ class GenomicIntervalPanel(FilePanel):
         self.color, self.colors, self.fontsize = color, colors, fontsize
         self.jitter = jitter
 
-    def get_config(self, feature, browser_config):
+    def get_config(self, region, browser_config):
 
-        return {'lines': 1}
+        return {'rows': 1}
 
-    def _plot(self, ax, feature):
+    def _plot(self, ax, region):
 
         ax.set_axis_off()
 
-        ax.set_xlim(feature.start, feature.end)
+        ax.set_xlim(region.start, region.end)
         ax.set_ylim(0, 1)
 
         patches = []
 
-        for i, interval in enumerate(self.datafile.adapter[feature]):
+        for i, interval in enumerate(self.datafile.adapter[region]):
 
             vertical_pos = 0.8 + ((i % 2 or -1) * self.jitter)
 
