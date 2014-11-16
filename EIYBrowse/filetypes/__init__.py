@@ -40,9 +40,6 @@ def get_file_opener(file_type):
             ep.name: ep.load()
             for ep in iter_entry_points('EIYBrowse.filetypes')}
 
-        import gffutils
-        defined_filetypes.update({'gffutils_db': gffutils.FeatureDB})
-
         from metaseq._genomic_signal import _registry
         defined_filetypes.update(_registry)
 

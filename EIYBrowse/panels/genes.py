@@ -1,178 +1,337 @@
 """The genes module defines a panel for plotting the position of genes"""
 
 from .base import FilePanel
-import itertools
-import numpy as np
 import matplotlib.pyplot as plt
+
+
+def get_start_stop_on_axes(axes, interval):
+
+    """Given a set of axes and a genomic interval, return
+    the start and stop of the interval in axes co-ordinates
+
+    :param :class:`matplotlib.axes.AxesSubplot` axes: Set of matplotlib
+        axes to use as the bounding extent
+    :param :class:`pybedtools.Interval` interval: Genomic interval for which
+        to determine the extent in axis co-ordinates
+    :returns: interval start and stop in axes co-ordinates (pair of floats)
+    """
+
+    xstart, xstop = axes.get_xlim()
+    xspan = xstop - xstart
+
+    if interval.start <= xstart:
+        iv_start = 0.0
+    else:
+        dist_from_start = interval.start - xstart
+        iv_start = dist_from_start / xspan
+    if interval.stop >= xstop:
+        iv_stop = 1.0
+    else:
+        dist_from_end = xstop - interval.stop
+        iv_stop = 1.0 - (dist_from_end / xspan)
+
+    return iv_start, iv_stop
 
 
 class GenePanel(FilePanel):
 
     """Panel for displaying the position of genes and their introns/exons.
-    
+
     The genes panel needs to have enough vertical space to display all
     of the genes over the requested region. Therefore, the list of genes
     and their positions must be retrieved *before* the figure axes are
     set up. The panel therefore makes use of the :method:`get_config`
     method, which is always called before the plot is initiated.
-    
+
     Once the list of genes is retrieved, we need to decide how to arrange
     them without allowing them to overlap. The most difficult part of this
     is ensuring that the name labels don't overlap.
     """
 
-    # Plotting requires a lot of parameters. I can't see a simple
-    # way of grouping these together at the moment.
-    # pylint: disable=too-many-arguments
     def __init__(self, datafile,
                  color='#377eb8',
                  name=None, name_rotate=False,
                  **kwargs):
+
+        """Create a new gene panel.
+
+        :param datafile: Object providing access to the names and locations
+            of genes. At the moment only :class:`gffutils.FeatureDB` objects
+            are supported.
+        :param str color: Color specifier for the gene icons
+        :param str name: Optional name label
+        :param bool name_rotate: Whether to rotate the name label 90 degrees
+        """
 
         super(GenePanel, self).__init__(datafile,
                                         name, name_rotate)
 
         self.color, self.kwargs = color, kwargs
 
+        self.gene_rows = GeneRows()
+
     def get_config(self, feature, browser_config):
 
-        self.index = itertools.cycle(np.arange(1, 0, -0.25))
+        """Calculate the number of vertial rows needed in the axis that will
+        be assigned to this panel.
 
-        self.levels = GeneLevels()
+        Genes are retrieved from the backend by calling the
+        :meth:`EIYBrowse.filetypes.gffutils_db.GffutilsDb.get_genes` method
+        of the backend. :meth:`_get_gene_extents` iterates over the found
+        genes and returns the start/stop of the gene when plotted (including
+        the name label). Each gene is added to self.gene_rows, which is a
+        :class:`GeneRows` object that assigns each gene to a vertical row,
+        making sure that none of them overlap.
 
-        self.genes = list(self.iter_features(
-            self.datafile.region(feature, completely_within=False, 
-                                 featuretype='gene')))
+        Once all the rows are added, we return the total number of rows needed
+        to arrange the genes without overlaps by calling :meth:`total_rows`.
 
-        _fig = plt.figure(figsize=(16, 1))
-        _ax = _fig.add_subplot(111)
-        _ax.set_xlim(feature.start, feature.stop)
-        _r = _fig.canvas.get_renderer()
+        :param :class:`pybedtools.Interval` feature: Genomic interval to
+            plot genes over.
+        :param :class:`~EIYBrowse.core.Browser` browser: Parent browser
+            object that will create the new plotting axis.
+        """
 
-        for g in self.genes:
+        self.gene_rows.rows = []
 
-            line, text = self.plot_gene(_ax, g['gene'])
+        genes = self.datafile.get_genes(feature)
 
-            l_bb, t_bb = line.get_window_extent(_r), text.get_window_extent(_r)
-            start = l_bb.x0
-            stop = max([l_bb.x1, t_bb.x1])
-            stop = stop * 1.1
-            self.levels.add_gene(g, start, stop)
+        for gene, start, stop in self._get_gene_extents(feature, genes):
 
-        self.total_levels = len(self.levels.levels)
+            self.gene_rows.add_gene(gene, start, stop)
+
+        return {'lines': self.total_rows()}
+
+    def total_rows(self):
+
+        """The number of rows needed to plot the current set of genes.
+
+        If there is no current set of genes, just return 1 (as we can't
+        take up 0 vertical space).
+        """
+
+        return len(self.gene_rows.rows) or 1
+
+    def _get_gene_extents(self, feature, genes):
+
+        """Private method that iterates over genes and calculates the
+        axis space that they will need to occupy, including their name label.
+
+        At the moment, this calls :meth:`_get_gene_extent` and actually plots
+        the gene, then queries the space used. This is of course highly
+        inefficient as we have to plot every gene twice (once to figure out
+        how big it is, and then again once we have assigned it to the correct
+        vertical line) and should be replaced with something a bit more clever
+        ASAP.
+        """
+
+        _figure = plt.figure(figsize=(16, 1))
+        _plot_axis = _figure.add_subplot(111)
+        _plot_axis.set_xlim(feature.start, feature.stop)
+        _renderer = _figure.canvas.get_renderer()
+
+        for gene in genes:
+
+            start, stop = self._get_gene_extent(gene, _plot_axis, _renderer)
+            yield gene, start, stop
 
         plt.close('all')
 
-        return {'lines': self.total_levels}
+    def _get_gene_extent(self, gene, _plot_axis, _renderer):
 
-    def iter_features(self, genes):
+        """Plot the gene to _plot_axis, then ask _renderer how big the gene is.
+        """
 
-        gene_iterator = (gene for gene in genes)
+        gene_line, gene_label = self.plot_gene_dict(_plot_axis, gene,
+                                                    plot_exons=False)
 
-        for gene in gene_iterator:
-            mrnas = list(self.datafile.children(gene.id, featuretype='mRNA'))
-            longest_mrna = sorted(mrnas, key=lambda m: m.stop - m.start).pop()
-            exons = self.datafile.children(longest_mrna.id, featuretype='exon')
-            yield {'gene': gene,
-                   'mrna': longest_mrna,
-                   'exons': exons}
+        line_bounds = gene_line.get_window_extent(_renderer)
+        label_bounds = gene_label.get_window_extent(_renderer)
 
-    def get_axis_start_stop(self, ax, interval):
+        start = line_bounds.x0
+        stop = max([line_bounds.x1, label_bounds.x1])
+        stop = stop * 1.1
 
-        xstart, xstop = ax.get_xlim()
-        xspan = xstop - xstart
+        return start, stop
 
-        if interval.start <= xstart:
-            iv_start = 0.0
-        else:
-            dist_from_start = interval.start - xstart
-            iv_start = dist_from_start / xspan
-        if interval.stop >= xstop:
-            iv_stop = 1.0
-        else:
-            dist_from_end = xstop - interval.stop
-            iv_stop = 1.0 - (dist_from_end / xspan)
+    def plot_name(self, plot_ax, start, name, row_index=0):
 
-        return iv_start, iv_stop
+        """Plot the name label of the gene.
 
-    def plot_name(self, ax, start, name, ix=(0, 1)):
+        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
+            the gene name label on
+        :param float start: Start position of the gene in axis co-ordinates
+        :param str name: Name of the gene to be plotted
+        :param float row_index: Vertical position of the row which the gene
+            is to be plotted to.
+        """
 
-        span = 1. / ix[1]
+        span = 1. / self.total_rows()
 
-        return ax.text(start, ix[0] - span, name, **self.kwargs)
+        return plot_ax.text(start, row_index - span, name, **self.kwargs)
 
-    def plot_gene(self, ax, gene, ix=(0, 1)):
+    def plot_gene_body(self, plot_ax, gene, row_index=0):
 
-        start, stop = self.get_axis_start_stop(ax, gene)
+        """Plot the body of the gene to the plotting axes.
 
-        span = 1. / ix[1]
+        First we get the extent of the gene in axis co-ordinates.
 
-        line_patch = ax.axhline(
-            ix[0] - 2 * span / 5., start, stop, linewidth=1, color='r')
-        name_patch = self.plot_name(
-            ax, gene.start, gene.attributes['Name'][0], ix)
+        We then determine the vertial position of the gene . First the vertial
+        span of each row is calculated by dividing the extent of the whole
+        axis (which is always 1) by the total number of rows. The position of
+        the current gene is then given by the top position of the current row
+        (given by row_index) minus two fifths of the row span.
 
-        return line_patch, name_patch
+        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
+            the gene name label on
+        :param :class:`pybedtools.Interval` gene: Gene object to be plotted
+        :param float row_index: Vertical position of the row which the gene
+            is to be plotted to.
+        """
 
-    def plot_exon(self, ax, exon, ix=(0, 1)):
+        start, stop = get_start_stop_on_axes(plot_ax, gene)
 
-        start, stop = self.get_axis_start_stop(ax, exon)
+        span = 1. / self.total_rows()
 
-        span = 1. / ix[1]
+        gene_height = row_index - 2 * span / 5.
 
-        ax.axhspan(
-            ix[0] - span / 5., ix[0] - 3 * span / 5., start, stop, color='r')
+        line_patch = plot_ax.axhline(
+            gene_height, start, stop, linewidth=1, color='r')
 
-    def _plot(self, ax, feature):
+        return line_patch
 
-        ax.axis('off')
-        ax.set_xlim(feature.start, feature.stop)
-        ax.set_ylim(0, 1)
+    def plot_exon(self, plot_ax, exon, row_index=0):
 
-        for i, level in enumerate(self.levels.levels):
+        """Plot the exon to the plotting axes.
 
-            for g in level.genes:
+        First we get the extent of the exon in axis co-ordinates.
 
-                ix = (1.0 - (i * (1.0 / self.total_levels)), self.total_levels)
+        We then determine the vertial position of the exon . First the vertial
+        span of each row is calculated by dividing the extent of the whole
+        axis (which is always 1) by the total number of rows. The top of
+        the current exon is then given by the top position of the current row
+        (row_index) minus one fifth of the row span, and the bottom
+        is given by the row_index minus three fifths of the row span.
 
-                self.plot_gene(ax, g['gene'], ix)
+        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
+            the gene name label on
+        :param :class:`pybedtools.Interval` gene: Gene object to be plotted
+        :param float row_index: Vertical position of the row which the gene
+            is to be plotted to.
+        """
 
-                for e in g['exons']:
+        start, stop = get_start_stop_on_axes(plot_ax, exon)
 
-                    self.plot_exon(ax, e, ix)
+        span = 1. / self.total_rows()
+
+        exon_top = row_index - (span / 5.)
+        exon_bottom = row_index - (3 * span / 5.)
+
+        plot_ax.axhspan(exon_top, exon_bottom,
+                        start, stop,
+                        color='r')
+
+    def plot_gene_dict(self, plot_ax, gene_dict, row_index=0,
+                       plot_exons=True):
+
+        """Plot the gene dictionary to the plotting axes.
+
+        The 'gene' key of gene_dict should contain a
+        :class:`pybedtools.Interval` representing the entire gene, which is
+        passed to :meth:`plot_gene_body`.
+
+        The 'exons' key should contain a list of :class:`pybedtools.Interval`s
+        representing each individual exon of the gene's longest isoform, which
+        are passed to :meth:`plot_exon`.
+
+        Finally, the name label of the gene is plotted by :meth:`plot_name`.
+
+        :param :class:`matplotlib.axes.AxesSubplot` plot_ax: Axes to plot
+            the gene name label on
+        :param dict gene_dict: Dictionary containing the details of the gene
+            to be plotted
+        :param bool exons: Whether to plot the exons
+        :param float row_index: Vertical position of the row on which the gene
+            is to be plotted
+        """
+
+        gene = gene_dict['gene']
+        gene_body_patch = self.plot_gene_body(plot_ax, gene, row_index)
+
+        if plot_exons:
+            for exon in gene_dict['exons']:
+
+                self.plot_exon(plot_ax, exon, row_index)
+
+        name_label_patch = self.plot_name(
+            plot_ax, gene.start, gene.attributes['Name'][0], row_index)
+
+        return gene_body_patch, name_label_patch
+
+    def _plot(self, plot_ax, feature):
+
+        """Private method which plots all the genes over the specified
+        interval.
+        """
+
+        plot_ax.axis('off')
+        plot_ax.set_xlim(feature.start, feature.stop)
+        plot_ax.set_ylim(0, 1)
+
+        for i, gene_row in enumerate(self.gene_rows.rows):
+
+            for gene_dict in gene_row['genes']:
+
+                row_index = 1.0 - (i * (1.0 / self.total_rows()))
+
+                self.plot_gene_dict(plot_ax, gene_dict, row_index)
 
 
-class GeneLevel(object):
+class GeneRows(object):
+
+    """Class for assigning genes to vertical rows without overlapping."""
 
     def __init__(self):
 
-        self.genes = []
-        self.stop = 0
+        """Create a new GeneRows object"""
 
-    def add_gene(self, gene, stop):
-
-        self.genes.append(gene)
-        self.stop = stop
-
-
-class GeneLevels(object):
-
-    def __init__(self):
-
-        self.levels = [GeneLevel()]
+        self.rows = []
 
     def add_gene(self, gene, start, stop):
 
-        lev = self.get_gene_level(start)
-        lev.add_gene(gene, stop)
+        """Add a gene to the internal store.
 
-    def get_gene_level(self, start):
+        Calls the :meth:`get_gene_row` method to return the row we should
+        add the gene to such that it doesn't overlap with any already
+        added genes. Then adds the gene to the returned row and updates
+        the 'stop' key to reflect the new rightmost position in the row.
 
-        for lev in self.levels:
-            if start > lev.stop:
-                return lev
+        :param :class:`pybedtools.Interval` gene: Gene object to add
+        :param float start: Start position of the gene in axis co-ordinates
+        :param float stop: Stop position of the gene in axis co-ordinates
+        """
 
-        new_lev = GeneLevel()
-        self.levels.append(new_lev)
+        row = self.get_gene_row(start)
+        row['genes'].append(gene)
+        row['stop'] = stop
 
-        return new_lev
+    def get_gene_row(self, start):
+
+        """Go through all of the existing rows and return the first row where
+        the start position of the new gene would not overlap the stop position
+        of any existing genes in that row.
+
+        If no existing row is found, make a new empty row and return that.
+
+        :param float start: Start position of the gene in axis co-ordinates
+        """
+
+        for row in self.rows:
+            if start > row['stop']:
+                return row
+
+        new_row = {'genes': [],
+                   'stop': 0}
+        self.rows.append(new_row)
+
+        return new_row

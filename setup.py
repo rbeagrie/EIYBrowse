@@ -28,6 +28,7 @@ setup(
                         ],
                     'EIYBrowse.filetypes': [
                         'interactions_db = EIYBrowse.filetypes.interactions_db:InteractionsDbFile',
+                        'gffutils_db = EIYBrowse.filetypes.gffutils_db:GffutilsDb',
                         'my5c_folder = EIYBrowse.filetypes.my5c_folder:My5CFolder',
                     ]
                    },
