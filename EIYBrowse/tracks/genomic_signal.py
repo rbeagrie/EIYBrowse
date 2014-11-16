@@ -19,7 +19,7 @@ class GenomicSignalTrack(FileTrack):
         self.color, self.negative_color = color, negative_color
         self.ymin, self.ymax = ymin, ymax
 
-    def get_config(self, region, browser_config):
+    def get_config(self, region, browser):
 
         return {'rows': self.height}
 

@@ -17,7 +17,7 @@ class GenomicIntervalTrack(FileTrack):
         self.color, self.colors, self.fontsize = color, colors, fontsize
         self.jitter = jitter
 
-    def get_config(self, region, browser_config):
+    def get_config(self, region, browser):
 
         return {'rows': 1}
 

@@ -35,7 +35,7 @@ class Track(object):
     # Some classes won't need to do anything here, and can leave
     # this as it is. So we need to disable some warnings:
     # pylint: disable=unused-argument, no-self-use
-    def get_config(self, region, browser_config):
+    def get_config(self, region, browser):
 
         """Any subclass that needs to do setup before the axes
         are created should place that code here."""

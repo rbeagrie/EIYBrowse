@@ -20,7 +20,7 @@ class LocationTrack(Track):
         self.color, self.fontsize = color, fontsize
         self.name = None
 
-    def get_config(self, region, browser_config):
+    def get_config(self, region, browser):
 
         return {'rows': 1}
 

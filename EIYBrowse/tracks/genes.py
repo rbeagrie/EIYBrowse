@@ -72,7 +72,7 @@ class GeneTrack(FileTrack):
 
         self.gene_rows = GeneRows()
 
-    def get_config(self, region, browser_config):
+    def get_config(self, region, browser):
 
         """Calculate the number of vertial rows needed in the axis that will
         be assigned to this track.
