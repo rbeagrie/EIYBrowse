@@ -1,17 +1,28 @@
+"""The tracks.interactions module contains a panel for displaying heatmaps
+of interactions data. This is best for dense interaction data, where many
+loci are measured against many loci e.g. 5C or Hi-C data.
+"""
+
 from .base import FileTrack
 from PIL import Image
 import numpy as np
 
 
-def remove_diagonal(in_array):
-    "Puts np.NaN in the diagonal of in_array"
+def rotate_heatmap(data, flip=False):
 
-    N = in_array.shape[0]
-    assert in_array.shape[1] == N
-    in_array.flat[0:N ** 2:N + 1] = np.NAN
+    """Rotate a symmetrical matrix 45 degrees and move diagonal to the x-axis
 
+    After this transformation, the heatmap will appear as a triangle, with
+    genomic location on the x-axis only.
 
-def rotate_to_fit_ax(ax, data, flip=False):
+    These heatmaps can be easier to line up with other genomic data
+    (e.g. gene positions or ChIP-seq peaks).
+
+    :param data: Input array heatmap
+    :type data: :class:`~numpy.array`
+    :param bool flip: Whether the triangle should point downwards from the
+        axis (default is upwards).
+    """
 
     # The width will be equal to the diagonal of the rotated square
 
@@ -29,6 +40,7 @@ def rotate_to_fit_ax(ax, data, flip=False):
 
     new_width = rot.size[0]
 
+    # Crop the bottom half of the triangle
     rot = rot.crop((0, 0, new_width, new_width / 2))
 
     if flip:
@@ -36,7 +48,7 @@ def rotate_to_fit_ax(ax, data, flip=False):
 
     rot = np.array(rot)
 
-    # Any 0's are actually background, so set them to NAN
+    # Any 0's are actually the image background, so set them to NAN
     rot[rot == 0.] = np.NAN
 
     # Now take off the 100 we added before:
@@ -83,11 +95,11 @@ class InteractionsTrack(FileTrack):
             array[array < self.clip_hard] = np.NAN
         return np.clip(array, clip_lower, clip_upper)
 
-    def _plot(self, ax, region):
+    def _plot(self, plot_ax, region):
 
         data, new_region = self.datafile.interactions(region)
 
-        self.plot_matrix(ax, data)
+        self.plot_matrix(plot_ax, data)
 
         return new_region
 
@@ -95,13 +107,13 @@ class InteractionsTrack(FileTrack):
 
         ax.axis('off')
 
-        remove_diagonal(data)
+        np.fill_diagonal(data, np.NaN)
 
         if self.clip:
             data = self.clip_for_plotting(data, self.clip)
 
         if self.rotate:
-            rotated = rotate_to_fit_ax(ax, data, self.flip)
+            rotated = rotate_heatmap(data, self.flip)
         else:
             rotated = data
 
