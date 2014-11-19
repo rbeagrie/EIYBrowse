@@ -6,6 +6,9 @@ loci are measured against many loci e.g. 5C or Hi-C data.
 from .base import FileTrack
 from PIL import Image
 import numpy as np
+from math import ceil
+from matplotlib.cm import get_cmap
+from matplotlib.colors import Normalize, LogNorm, SymLogNorm, BoundaryNorm
 
 
 def rotate_heatmap(data, flip=False):
@@ -57,67 +60,210 @@ def rotate_heatmap(data, flip=False):
     return rot
 
 
-class InteractionsTrack(FileTrack):
+def colormap_from_config_dict(name='jet',
+                              over_color=None, under_color=None):
 
-    """Base track for displaying 3D interactions data 
-    (e.g. Hi-C) across a genomic region"""
+    cmap = get_cmap(name)
+
+    return cmap
+
+
+normalizers = {'linear': Normalize,
+               'log': LogNorm,
+               'symmetric_log': SymLogNorm,
+               'boundary': BoundaryNorm}
+
+try:
+    from matplotlib.colors import PowerNorm
+    normalizers['power_law'] = PowerNorm
+except ImportError:
+    pass
+
+def get_quantile_scaled_normalizer(norm_class, quantile):
+
+    qmin, qmax = sorted([quantile, 100. - quantile])
+
+    class QuantileScaled(norm_class):
+
+        def autoscale_None(self, A):
+            ' autoscale only None-valued vmin or vmax'
+
+            if np.size(A) > 0:
+                self.vmin = np.percentile(A[np.isfinite(A)], qmin)
+
+            if np.size(A) > 0:
+                self.vmax = np.percentile(A[np.isfinite(A)], qmax)
+
+            super(QuantileScaled, self).autoscale_None(A)
+
+    return QuantileScaled
+
+
+def normalizer_from_config_dict(method='linear', quantile_scaled=None,
+                                **norm_args):
+
+    norm_class = normalizers[method]
+
+    if not quantile_scaled is None:
+        norm_class = get_quantile_scaled_normalizer(norm_class, quantile_scaled)
+
+    norm = norm_class(**norm_args)
+
+    return norm
+
+
+class SquareInteractionsTrack(FileTrack):
+
+    """Track for displaying 3D interactions data
+    (e.g. Hi-C) across a genomic region as a square matrix"""
 
     def __init__(self, datafile,
-                 flip=False, log=False, rotate=True,
-                 clip=1., clip_hard=None,
                  name=None, name_rotate=False,
-                 **kwargs):
+                 **imshow_kwargs):
 
-        super(InteractionsTrack, self).__init__(datafile,
-                                                name, name_rotate)
+        """Create a new interactions track
 
-        self.flip, self.log, self.rotate = flip, log, rotate
-        self.clip, self.clip_hard = clip, clip_hard
-        self.kwargs = kwargs
+        :param datafile: Object providing access to the interactions data
+        :param normalizer: Normalizer to scale the matrix data between 0 and 1
+        :type normalizer: :class:`matplotlib.colors.Normalize`
+        :param cmap: Colormap to convert matrix values into colors
+        :type cmap: :class:`matplotlib.colors.`Colormap`
+        :param imshow_kwargs: Optional keyword arguments to be passed to
+            :func:`matplotlib.pylab.imshow`
+        :param str name: Optional name label
+        :param bool name_rotate: Whether to rotate the name label 90 degrees
+        """
+
+        super(SquareInteractionsTrack, self).__init__(datafile,
+                                                      name, name_rotate)
+
+        self.imshow_kwargs = imshow_kwargs
 
 
     def get_config(self, region, browser):
 
-        rows_wide = browser.width / browser.rowheight
-        if self.rotate:
-            needed_rows = rows_wide / 2.
-        else:
-            needed_rows = rows_wide
+        """Calculate how many rows of height need to be requested.
+        Since we will return a square matrix, we need to be the same height
+        as our width.
+        """
 
-        return {'rows': int(needed_rows)}
+        width_in_rows = browser.width / browser.rowheight
+        needed_rows = width_in_rows
 
-    def clip_for_plotting(self, array, percentile=1.):
-
-        clip_lower = np.percentile(array[np.isfinite(array)], percentile)
-        clip_upper = np.percentile(
-            array[np.isfinite(array)], (100. - percentile))
-        if not self.clip_hard is None:
-            array[array < self.clip_hard] = np.NAN
-        return np.clip(array, clip_lower, clip_upper)
+        return {'rows': int(ceil(needed_rows))}
 
     def _plot(self, plot_ax, region):
 
+        """Handle plotting of the matrix to the plotting axis.
+
+        First get the interactions matrix from the datafile by calling the
+        interactions method with the region, then mask the matrix diagonal
+        and pass the masked matrix to :meth:`_plot_matrix`.
+        """
+
         data, new_region = self.datafile.interactions(region)
-
-        self.plot_matrix(plot_ax, data)
-
-        return new_region
-
-    def plot_matrix(self, ax, data):
-
-        ax.axis('off')
 
         np.fill_diagonal(data, np.NaN)
 
-        if self.clip:
-            data = self.clip_for_plotting(data, self.clip)
+        return self._plot_matrix(plot_ax, data)
 
-        if self.rotate:
-            rotated = rotate_heatmap(data, self.flip)
-        else:
-            rotated = data
+    def _plot_matrix(self, plot_ax, data):
 
-        if self.log:
-            rotated = np.log10(rotated)
+        """Hide the axes ticklabels and display the interaction matrix
+        using :func:`~matplotlib.pyplot.imshow`
+        """
 
-        ax.imshow(rotated, interpolation='none', **self.kwargs)
+        plot_ax.axis('off')
+
+        plot_ax.imshow(data, interpolation='none', **self.imshow_kwargs)
+
+    @classmethod
+    def from_config_dict(cls, cmap=None, norm=None,
+                         **kwargs):
+
+        """Before calling parent's
+        :meth:`~EIYBrowse.tracks.base.FileTrack.from_config_dict` method,
+        check whether cmap or norm are parameters are dictionaries. If they
+        are, handle them separately to create the appropriate objects to pass
+        (eventually) to imshow.
+
+        :param dict cmap: Dictionary of options which will be expanded and
+            passed to :func:`colormap_from_config_dict` to create an object
+            of type :class:`~matplotlib.colors.Colormap`
+        :param dict norm: Dictionary of options which will be expanded and
+            passed to :func:`normalizer_from_config_dict` to create an object
+            of type :class:`~matplotlib.colors.Normalize`
+        """
+
+        if type(cmap) is dict:
+            cmap = colormap_from_config_dict(**cmap)
+
+        if not norm is None:
+            if type(norm) is str:
+                norm = normalizer_from_config_dict(method=norm)
+            else:
+                norm = normalizer_from_config_dict(**norm)
+
+        kwargs['cmap'] = cmap
+        kwargs['norm'] = norm
+
+        return super(SquareInteractionsTrack, cls).from_config_dict(**kwargs)
+
+
+class TriangularInteractionsTrack(SquareInteractionsTrack):
+
+    """Track for displaying 3D interactions data
+    (e.g. Hi-C) across a genomic region as a triangular matrix -
+    i.e. by rotating the matrix by 45 degrees and moving the diagonal of the
+    matrix to the x-axis.
+    """
+
+    def __init__(self, datafile,
+                 name=None, name_rotate=False,
+                 flip=False,
+                 **imshow_kwargs):
+
+        """Create a new interactions track
+
+        :param datafile: Object providing access to the interactions data
+        :param normalizer: Normalizer to scale the matrix data between 0 and 1
+        :type normalizer: :class:`matplotlib.colors.Normalize`
+        :param cmap: Colormap to convert matrix values into colors
+        :type cmap: :class:`matplotlib.colors.`Colormap`
+        :param imshow_kwargs: Optional keyword arguments to be passed to
+            :func:`matplotlib.pylab.imshow`
+        :param str name: Optional name label
+        :param bool name_rotate: Whether to rotate the name label 90 degrees
+        :param bool flip: Whether the matrix should extend downwards from the x
+            axis (default is upwards from the axis).
+        """
+
+        super(TriangularInteractionsTrack,
+              self).__init__(datafile,
+                             name, name_rotate,
+                             **imshow_kwargs)
+
+        self.flip = flip
+
+    def get_config(self, region, browser):
+
+        """Calculate how many rows of height need to be requested.
+        Since we will return a triangular matrix, we need to be half as high
+        as our width.
+        """
+
+        width_in_rows = browser.width / browser.rowheight
+        needed_rows = width_in_rows / 2.
+
+        return {'rows': int(ceil(needed_rows))}
+
+    def _plot_matrix(self, plot_ax, data):
+
+        """Rotate the data (and flip if required), then pass it to parent's
+        :meth:`~SquareInteractionsTrack._plot_matrix` method.
+        """
+
+        rotated_data = rotate_heatmap(data, self.flip)
+
+        return super(TriangularInteractionsTrack,
+                     self)._plot_matrix(plot_ax, rotated_data)
