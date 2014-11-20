@@ -7,8 +7,24 @@ from .base import FileTrack
 from PIL import Image
 import numpy as np
 from math import ceil
-from matplotlib.cm import get_cmap
-from matplotlib.colors import Normalize, LogNorm, SymLogNorm, BoundaryNorm
+from matplotlib import cm
+from matplotlib import colors
+
+
+# List of valid normalize classes available
+NORMALIZERS = {'linear': colors.Normalize,
+               'log': colors.LogNorm,
+               'symmetric_log': colors.SymLogNorm,
+               'boundary': colors.BoundaryNorm}
+
+# Power-law normalization was only added in matplotlib version 1.4, so
+# only enable it if it's available
+# pylint: disable=no-name-in-module
+try:
+    from matplotlib.colors import PowerNorm
+    NORMALIZERS['power_law'] = PowerNorm
+except ImportError:
+    pass
 
 
 def rotate_heatmap(data, flip=False):
@@ -60,33 +76,70 @@ def rotate_heatmap(data, flip=False):
     return rot
 
 
-def colormap_from_config_dict(name='jet',
-                              over_color=None, under_color=None):
+def colormap_from_config(name='jet',
+                         over_color=None, under_color=None,
+                         nan_color=None):
 
-    cmap = get_cmap(name)
+    """Unpack properties of the colormap which can be set in the config file.
+
+    Essentially get a :class:`~matplotlib.colors.ColorMap` object from it's
+    string name and manually set the over, under and bad colors if specified.
+
+    :param str name: Name of the colormap to use
+    :param str over_color: Color to use when the matrix value is higher than
+        the maximum allowed value (given by the vmax attribute of norm)
+    :param str under_color: Color to use when the matrix value is lower than
+        the minumum allowed value (given by the vmin attribute of norm)
+    :param str nan_color: Color to use when the matrix value is not a number
+    """
+
+    cmap = cm.get_cmap(name)
+
+    if over_color is not None:
+        cmap.set_over(over_color)
+    if under_color is not None:
+        cmap.set_under(under_color)
+    if nan_color is not None:
+        cmap.set_bad(nan_color)
 
     return cmap
 
 
-normalizers = {'linear': Normalize,
-               'log': LogNorm,
-               'symmetric_log': SymLogNorm,
-               'boundary': BoundaryNorm}
+def get_quantile_scaled_normalizer(norm_class=colors.Normalize,
+                                   quantile=5):
 
-try:
-    from matplotlib.colors import PowerNorm
-    normalizers['power_law'] = PowerNorm
-except ImportError:
-    pass
+    """Given a subclass of Normalize, return a new class which sets vmin and
+    vmax by the *quantiles* of the given array, rather than the minimum or
+    maximum. The quantiles are symmetric, so the lower quantile qmin is equal
+    to *quantile* or *100. - quantile*, whichever is smaller.
 
-def get_quantile_scaled_normalizer(norm_class, quantile):
+    In other words, the quantile can be specified as either 5. or 95. with the
+    same result.
+
+    :param norm_class: Subclass of :class:`~matplotlib.colors.Normalize` to
+        inherit from
+    :type norm_class: class
+    :param float quantile: Either the upper or lower quantile (clipping is
+        done symmetrically, so either can be specified.
+    """
 
     qmin, qmax = sorted([quantile, 100. - quantile])
 
     class QuantileScaled(norm_class):
 
+        """New class which turns any subclass of matplotlib's Normalize into
+        a normalizer that clips data to the xth and 100-xth quantile
+        """
+
+        # I did not name the autoscale_None method or its parameters, so
+        # don't bug me about it!
+        # pylint: disable=invalid-name
+
         def autoscale_None(self, A):
-            ' autoscale only None-valued vmin or vmax'
+            """Set vmin and vmax correctly (even if they are not None)
+            then call parent classes autoscale_None method in case it needs
+            to do something else (like take the log).
+            """
 
             if np.size(A) > 0:
                 self.vmin = np.percentile(A[np.isfinite(A)], qmin)
@@ -99,10 +152,30 @@ def get_quantile_scaled_normalizer(norm_class, quantile):
     return QuantileScaled
 
 
-def normalizer_from_config_dict(method='linear', quantile_scaled=None,
-                                **norm_args):
+def normalizer_from_config(method='linear', quantile_scaled=None,
+                           **norm_args):
 
-    norm_class = normalizers[method]
+    """Unpack properties of the color normalizer which can be set in the config
+    file.
+
+    Essentially get a :class:`~matplotlib.colors.Normalize` object from it's
+    string name and convert it to a quantile normalizer using the
+    :func:`get_quantile_scaled_normalizer` class factory if requested.
+
+    :param str method: Name of the normalizer to use. Can be any of 'linear',
+        'log', 'symmetric_log', 'boundary' or (in matplotlib versions >= 1.4)
+        'power_law'
+    :param quantile_scaled: If Norm, scale the matrix to the min/max of the
+        data, or by the constants vmin/vmax if specified in norm_args. If
+        a number from 0 to 100, scale the matrix by the xth and 100-xth
+        quantile of the data (e.g. if 5. is given, scale by the 5th and 95th
+        quantiles)
+    :type quantile_scaled: float or None
+    :param dict norm_args: Any additional parameters to pass to pass to the
+        :class:`~matplotlib.colors.Normalize` constructor
+    """
+
+    norm_class = NORMALIZERS[method]
 
     if not quantile_scaled is None:
         norm_class = get_quantile_scaled_normalizer(norm_class, quantile_scaled)
@@ -127,7 +200,7 @@ class SquareInteractionsTrack(FileTrack):
         :param normalizer: Normalizer to scale the matrix data between 0 and 1
         :type normalizer: :class:`matplotlib.colors.Normalize`
         :param cmap: Colormap to convert matrix values into colors
-        :type cmap: :class:`matplotlib.colors.`Colormap`
+        :type cmap: :class:`matplotlib.colors.Colormap`
         :param imshow_kwargs: Optional keyword arguments to be passed to
             :func:`matplotlib.pylab.imshow`
         :param str name: Optional name label
@@ -145,6 +218,11 @@ class SquareInteractionsTrack(FileTrack):
         """Calculate how many rows of height need to be requested.
         Since we will return a square matrix, we need to be the same height
         as our width.
+
+        :param region: Genomic region to plot
+        :type region: :class:`pybedtools.Interval`
+        :param browser: Browser object calling get_config function
+        :type browser: :class:`~EIYBrowse.core.Browser`
         """
 
         width_in_rows = browser.width / browser.rowheight
@@ -183,26 +261,26 @@ class SquareInteractionsTrack(FileTrack):
 
         """Before calling parent's
         :meth:`~EIYBrowse.tracks.base.FileTrack.from_config_dict` method,
-        check whether cmap or norm are parameters are dictionaries. If they
+        check whether cmap or norm parameters are dictionaries. If they
         are, handle them separately to create the appropriate objects to pass
         (eventually) to imshow.
 
         :param dict cmap: Dictionary of options which will be expanded and
-            passed to :func:`colormap_from_config_dict` to create an object
+            passed to :func:`colormap_from_config` to create an object
             of type :class:`~matplotlib.colors.Colormap`
         :param dict norm: Dictionary of options which will be expanded and
-            passed to :func:`normalizer_from_config_dict` to create an object
+            passed to :func:`normalizer_from_config` to create an object
             of type :class:`~matplotlib.colors.Normalize`
         """
 
         if type(cmap) is dict:
-            cmap = colormap_from_config_dict(**cmap)
+            cmap = colormap_from_config(**cmap)
 
         if not norm is None:
             if type(norm) is str:
-                norm = normalizer_from_config_dict(method=norm)
+                norm = normalizer_from_config(method=norm)
             else:
-                norm = normalizer_from_config_dict(**norm)
+                norm = normalizer_from_config(**norm)
 
         kwargs['cmap'] = cmap
         kwargs['norm'] = norm
@@ -229,7 +307,7 @@ class TriangularInteractionsTrack(SquareInteractionsTrack):
         :param normalizer: Normalizer to scale the matrix data between 0 and 1
         :type normalizer: :class:`matplotlib.colors.Normalize`
         :param cmap: Colormap to convert matrix values into colors
-        :type cmap: :class:`matplotlib.colors.`Colormap`
+        :type cmap: :class:`matplotlib.colors.Colormap`
         :param imshow_kwargs: Optional keyword arguments to be passed to
             :func:`matplotlib.pylab.imshow`
         :param str name: Optional name label
@@ -250,6 +328,11 @@ class TriangularInteractionsTrack(SquareInteractionsTrack):
         """Calculate how many rows of height need to be requested.
         Since we will return a triangular matrix, we need to be half as high
         as our width.
+
+        :param region: Genomic region to plot
+        :type region: :class:`pybedtools.Interval`
+        :param browser: Browser object calling get_config function
+        :type browser: :class:`~EIYBrowse.core.Browser`
         """
 
         width_in_rows = browser.width / browser.rowheight

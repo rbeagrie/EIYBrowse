@@ -1,7 +1,7 @@
-EIYBrowse.panels.genes module
+EIYBrowse.tracks.genes module
 =============================
 
-.. automodule:: EIYBrowse.panels.genes
+.. automodule:: EIYBrowse.tracks.genes
     :members:
     :undoc-members:
     :show-inheritance:

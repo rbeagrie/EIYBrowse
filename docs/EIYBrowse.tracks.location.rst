@@ -1,7 +1,7 @@
-EIYBrowse.panels.interval module
+EIYBrowse.tracks.location module
 ================================
 
-.. automodule:: EIYBrowse.panels.interval
+.. automodule:: EIYBrowse.tracks.location
     :members:
     :undoc-members:
     :show-inheritance:

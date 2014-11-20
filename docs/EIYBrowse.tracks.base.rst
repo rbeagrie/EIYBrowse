@@ -1,7 +1,7 @@
-EIYBrowse.panels.base module
+EIYBrowse.tracks.base module
 ============================
 
-.. automodule:: EIYBrowse.panels.base
+.. automodule:: EIYBrowse.tracks.base
     :members:
     :undoc-members:
     :show-inheritance:
