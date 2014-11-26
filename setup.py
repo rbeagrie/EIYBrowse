@@ -31,6 +31,7 @@ setup(
                         'interactions_db = EIYBrowse.filetypes.interactions_db:InteractionsDbFile',
                         'gffutils_db = EIYBrowse.filetypes.gffutils_db:GffutilsDb',
                         'my5c_folder = EIYBrowse.filetypes.my5c_folder:My5CFolder',
+                        'npz_folder = EIYBrowse.filetypes.npz_folder:NpzFolder',
                     ]
                    },
     install_requires = ["matplotlib", "pybedtools","numpy"],
