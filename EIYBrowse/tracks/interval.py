@@ -17,7 +17,7 @@ class GenomicIntervalTrack(FileTrack):
 
     def __init__(self, datafile,
                  color='#000000', jitter=0.0,
-                 text_kwargs=None,
+                 text_kwargs=None, icon_kwargs=None,
                  name=None, name_rotate=False):
 
         """To create a new genomic interval track:
@@ -68,6 +68,8 @@ class GenomicIntervalTrack(FileTrack):
     def _plot(self, ax, region):
 
         """Handle plotting to the specified plotting axis. Get all the 
+        intervals that overlap the requested region, then plot them.
+        """
 
         ax.set_axis_off()
 
