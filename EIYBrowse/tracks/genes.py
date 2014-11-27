@@ -129,6 +129,7 @@ class GeneTrack(FileTrack):
         ASAP.
         """
 
+        old_figure = plt.gcf()
         _figure = plt.figure(figsize=(16, 1))
         _plot_axis = _figure.add_subplot(111)
         _plot_axis.set_xlim(region.start, region.stop)
@@ -139,7 +140,8 @@ class GeneTrack(FileTrack):
             start, stop = self._get_gene_extent(gene, _plot_axis, _renderer)
             yield gene, start, stop
 
-        plt.close('all')
+        plt.close(_figure)
+        plt.figure(old_figure.number)
 
     def _get_gene_extent(self, gene, _plot_axis, _renderer):
 
