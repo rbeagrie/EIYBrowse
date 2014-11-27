@@ -12,24 +12,7 @@ import glob
 import numpy as np
 import pandas as pd
 import pybedtools
-
-
-class NoFilesError(Exception):
-    """Exception to be raised if no files could be found"""
-    pass
-
-
-class TooManyFilesError(Exception):
-    """Exception to be raised if more than one file was found
-    for a single chromosome.
-    """
-    pass
-
-
-class InvalidChromError(Exception):
-    """Exception to be raised if interactions are requested
-    from a non-existing chromosome."""
-    pass
+from ..exceptions import TooManyFilesError, NoFilesError
 
 
 def format_window(window):
@@ -211,6 +194,7 @@ class My5CFolder(object):
 
         self.folder_path = folder_path
         self.file_class = file_class
+        self.extension = 'my5c.txt'
 
     def find_chrom_file(self, chrom):
 
@@ -225,7 +209,7 @@ class My5CFolder(object):
             chromosome name.
         """
 
-        search_string = '*{0}_{0}*.my5c.txt'.format(chrom)
+        search_string = '*{0}_{0}*.{1}'.format(chrom, self.extension)
 
         found_files = glob.glob(os.path.join(self.folder_path, search_string))
 
