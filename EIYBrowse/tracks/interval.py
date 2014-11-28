@@ -7,8 +7,9 @@ class GenomicIntervalTrack(FileTrack):
     (e.g. a bed file of binding peaks) accross a genomic region"""
 
     def __init__(self, datafile,
-                 color='#000000', colors=None, fontsize=10,
-                 jitter=0.0,
+                 color='#000000', jitter=0.0,
+                 colors=None,
+                 text_kwargs=None, icon_kwargs=None,
                  name=None, name_rotate=False):
 
         super(GenomicIntervalTrack, self).__init__(datafile,
@@ -16,6 +17,13 @@ class GenomicIntervalTrack(FileTrack):
 
         self.color, self.colors, self.fontsize = color, colors, fontsize
         self.jitter = jitter
+
+        if text_kwargs is None: text_kwargs = {}
+        if icon_kwargs is None: icon_kwargs = {}
+
+        self.text_kwargs, self.icon_kwargs = text_kwargs, icon_kwargs
+        self.colors = colors
+        self.color = color
 
     def get_config(self, region, browser):
 
@@ -46,8 +54,7 @@ class GenomicIntervalTrack(FileTrack):
 
             if interval.name is not '.':
                 ax.text(interval.start, 0.2, interval.name, 
-                        fontsize=self.fontsize,
-                        color=col)
+                        color=col, **self.text_kwargs)
 
         return {'patches': patches,
                 }
