@@ -37,9 +37,11 @@ def make_frame(track, gs, row_index):
 
     """
 
-    label_ax = plt.subplot(gs[row_index, 0])
+    fig = plt.gcf()
 
-    plot_ax = plt.subplot(gs[row_index, 1])
+    label_ax = fig.add_subplot(gs[row_index, 0])
+
+    plot_ax = fig.add_subplot(gs[row_index, 1])
 
 
     frame_dict = {'track': track,
