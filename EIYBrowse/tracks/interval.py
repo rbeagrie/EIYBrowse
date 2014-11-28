@@ -17,6 +17,7 @@ class GenomicIntervalTrack(FileTrack):
 
     def __init__(self, datafile,
                  color='#000000', jitter=0.0,
+                 colors=None,
                  text_kwargs=None, icon_kwargs=None,
                  name=None, name_rotate=False):
 
@@ -48,6 +49,8 @@ class GenomicIntervalTrack(FileTrack):
         if icon_kwargs is None: icon_kwargs = {}
 
         self.text_kwargs, self.icon_kwargs = text_kwargs, icon_kwargs
+        self.colors = colors
+        self.color = color
 
     def get_config(self, region, browser):
 
@@ -94,8 +97,7 @@ class GenomicIntervalTrack(FileTrack):
 
             if interval.name is not '.':
                 ax.text(interval.start, 0.2, interval.name, 
-                        fontsize=self.fontsize,
-                        color=col)
+                        color=col, **self.text_kwargs)
 
         return {'patches': patches,
                 }
