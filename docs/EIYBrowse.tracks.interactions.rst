@@ -1,7 +1,7 @@
-EIYBrowse.panels.interactions module
+EIYBrowse.tracks.interactions module
 ====================================
 
-.. automodule:: EIYBrowse.panels.interactions
+.. automodule:: EIYBrowse.tracks.interactions
     :members:
     :undoc-members:
     :show-inheritance:

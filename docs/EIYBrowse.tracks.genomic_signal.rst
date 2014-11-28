@@ -1,7 +1,7 @@
-EIYBrowse.panels.genomic_signal module
+EIYBrowse.tracks.genomic_signal module
 ======================================
 
-.. automodule:: EIYBrowse.panels.genomic_signal
+.. automodule:: EIYBrowse.tracks.genomic_signal
     :members:
     :undoc-members:
     :show-inheritance:

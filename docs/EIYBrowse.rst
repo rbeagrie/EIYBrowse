@@ -8,7 +8,7 @@ Subpackages
 
     EIYBrowse.filetypes
     EIYBrowse.importers
-    EIYBrowse.panels
+    EIYBrowse.tracks
 
 Submodules
 ----------

@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   EIYBrowse.filetypes.gffutils_db
    EIYBrowse.filetypes.interactions_db
    EIYBrowse.filetypes.my5c_folder
 

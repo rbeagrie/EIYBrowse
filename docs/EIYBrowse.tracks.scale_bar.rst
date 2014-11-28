@@ -1,7 +1,7 @@
-EIYBrowse.panels.scale_bar module
+EIYBrowse.tracks.scale_bar module
 =================================
 
-.. automodule:: EIYBrowse.panels.scale_bar
+.. automodule:: EIYBrowse.tracks.scale_bar
     :members:
     :undoc-members:
     :show-inheritance:
