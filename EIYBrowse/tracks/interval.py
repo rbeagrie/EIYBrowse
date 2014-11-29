@@ -8,34 +8,31 @@ intervals, we have a separate track for genes:
 """
 
 from .base import FileTrack
+import itertools
 
 
 class GenomicIntervalTrack(FileTrack):
 
-    """Track for displaying a discrete signal 
+    """Track for displaying a discrete signal
     (e.g. a bed file of binding peaks) accross a genomic region"""
 
+    # I'm pretty sure there is no way to reduce these options any
+    # further...
+    # pylint: disable=too-many-arguments
     def __init__(self, datafile,
-                 color='#000000', jitter=0.0,
-                 colors=None,
-                 text_kwargs=None, icon_kwargs=None,
+                 labels=None, icons=None,
                  name=None, name_rotate=False):
 
         """To create a new genomic interval track:
 
         :param datafile: Datafile object which will handles access to the
             genomic intervals across a specific region.
-        :param color: Either a string or a list of strings specifying a color
-            for the text and the interval bars.
-        :param float jitter: Sequential items on the same row will be
-            offset by this amount on the y-axis. This can help to distinguish
-            many closely spaced intervals
-        :param text_kwargs: If specified, a dictionary of additional arguments
+        :param labels: If specified, a dictionary of additional arguments
             to pass to :func:`matplotlib.pyplot.text`
-        :type text_kwargs: dict or None
-        :param icon_kwargs: If specified, a dictionary of additional arguments
+        :type labels: dict or None
+        :param icons: If specified, a dictionary of additional arguments
             to pass to :meth:`matplotlib.axes.AxesSubplot.hlines`
-        :type icon_kwargs: dict or None
+        :type icons: dict or None
         :param str name: Optional name label
         :param bool name_rotate: Whether to rotate the name label 90 degrees
         """
@@ -43,14 +40,25 @@ class GenomicIntervalTrack(FileTrack):
         super(GenomicIntervalTrack, self).__init__(datafile,
                                                    name, name_rotate)
 
-        self.jitter = jitter
 
-        if text_kwargs is None: text_kwargs = {}
-        if icon_kwargs is None: icon_kwargs = {}
+        if labels is None:
+            labels = {}
+        if icons is None:
+            icons = {}
 
-        self.text_kwargs, self.icon_kwargs = text_kwargs, icon_kwargs
-        self.colors = colors
-        self.color = color
+        if 'colors' in icons:
+            self.colors = itertools.cycle(icons['colors'])
+            del icons['colors']
+        else:
+            self.colors = None
+
+        if 'jitter' in icons:
+            self.jitter = icons['jitter']
+            del icons['jitter']
+        else:
+            self.jitter = 0
+
+        self.labels, self.icons = labels, icons
 
     def get_config(self, region, browser):
 
@@ -70,7 +78,7 @@ class GenomicIntervalTrack(FileTrack):
 
     def _plot(self, ax, region):
 
-        """Handle plotting to the specified plotting axis. Get all the 
+        """Handle plotting to the specified plotting axis. Get all the
         intervals that overlap the requested region, then plot them.
         """
 
@@ -87,17 +95,16 @@ class GenomicIntervalTrack(FileTrack):
 
             if self.colors is not None:
                 col = self.colors.next()
-            else:
-                col = self.color
+                self.labels['color'] = col
+                self.icons['color'] = col
 
             patches.append(
-                ax.hlines(vertical_pos, 
+                ax.hlines(vertical_pos,
                           interval.start, interval.stop,
-                          color=col, lw=4))
+                          lw=4, **self.icons))
 
             if interval.name is not '.':
-                ax.text(interval.start, 0.2, interval.name, 
-                        color=col, **self.text_kwargs)
+                ax.text(interval.start, 0.2, interval.name,
+                        **self.labels)
 
-        return {'patches': patches,
-                }
+        return {'patches': patches}
