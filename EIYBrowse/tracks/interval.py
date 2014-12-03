@@ -83,7 +83,7 @@ class GenomicIntervalTrack(FileTrack):
 
         for i, interval in enumerate(self.datafile.adapter[region]):
 
-            vertical_pos = 0.8 + ((i % 2 or -1) * self.jitter)
+            vertical_pos = 0.65 + ((i % 2 or -1) * self.jitter)
 
             if self.colors is not None:
                 col = self.colors.next()

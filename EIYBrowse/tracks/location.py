@@ -52,6 +52,9 @@ class LocationTrack(Track):
         ax.xaxis.set_ticklabels(new_labels)
         ax.tick_params(labelsize=self.fontsize)
 
+        for label in ax.get_xticklabels():
+            label.set_horizontalalignment('left')
+
         return {'patches': None,
                 'data': None}
 

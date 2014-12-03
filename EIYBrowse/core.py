@@ -9,9 +9,10 @@ different genomic regions.
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 
-def make_frame(track, total_rows, frame_rows, row_index):
+def make_frame(track, gs, row_index):
     """Make a new frame to add to the current plot.
 
     Uses matplotlib's gridspec to create two new subplots. label_ax
@@ -36,11 +37,12 @@ def make_frame(track, total_rows, frame_rows, row_index):
 
     """
 
-    label_ax = plt.subplot2grid((total_rows, 10), (row_index, 0),
-                                rowspan=frame_rows,)
+    fig = plt.gcf()
 
-    plot_ax = plt.subplot2grid((total_rows, 10), (row_index, 1),
-                               rowspan=frame_rows, colspan=9)
+    label_ax = fig.add_subplot(gs[row_index, 0])
+
+    plot_ax = fig.add_subplot(gs[row_index, 1])
+
 
     frame_dict = {'track': track,
                   'plot_ax': plot_ax,
@@ -57,7 +59,7 @@ class Plot(object):
     method is called, a new Plot object is generated to hold
     references to all of the output."""
 
-    def __init__(self, figwidth, total_rows, rowheight):
+    def __init__(self, base_gridspec, track_configs):
         """Create a new plot object:
 
         :param int figwidth: Width of the plotting figure
@@ -70,20 +72,22 @@ class Plot(object):
         super(Plot, self).__init__()
 
         self.frames = []
-        self.row_index = 0
+        self.frame_index = 0
 
-        self.total_rows = total_rows
-        self.figwidth = figwidth
-        self.rowheight = rowheight
+        self.track_configs = track_configs
+        self.gs = self._make_gridspec(base_gridspec, track_configs)
 
-        self.figure = self._make_figure()
-
-    def _make_figure(self):
+    def _make_gridspec(self, base_gridspec, track_configs):
         """Create a new Figure instance to plot to."""
 
-        figheight = self.total_rows * self.rowheight
+        height_ratios = [p['rows'] for p in track_configs]
+        no_frames=len(height_ratios)
 
-        return plt.figure(figsize=(self.figwidth, figheight))
+        return gridspec.GridSpecFromSubplotSpec(no_frames, 2,
+                                                height_ratios=height_ratios,
+                                                width_ratios=[1,9],
+                                                wspace=0.0, hspace=0.1,
+                                                subplot_spec=base_gridspec)
 
     def add_frame(self, track, track_config):
         """Add a new frame to the current figure.
@@ -97,11 +101,11 @@ class Plot(object):
         """
 
         new_frame = make_frame(track,
-                               self.total_rows, track_config['rows'],
-                               self.row_index)
+                               self.gs,
+                               self.frame_index)
 
         self.frames.append(new_frame)
-        self.row_index += track_config['rows']
+        self.frame_index += 1
 
     def do_plot(self, region):
         """Plot the data for all frames over a region specified by region.
@@ -139,7 +143,20 @@ class Browser(object):
         self.width, self.rowheight = width, rowheight
 
 
-    def setup_plot(self, track_configs):
+    def _make_base_gridspec(self, track_configs):
+
+        """Make a figure of the appropriate size and add one subplot"""
+
+        total_rows = sum([p['rows'] for p in track_configs])
+
+        figheight = total_rows * self.rowheight
+
+        plt.figure(figsize=(self.width, figheight))
+
+        return gridspec.GridSpec(1, 1, wspace=0.0, hspace=0.0)[0]
+
+
+    def setup_plot(self, base_gridspec, track_configs):
         """Create a new plotting area.
 
         Work out the correct dimensions of the plotting area and all
@@ -153,10 +170,7 @@ class Browser(object):
         :rtype: :class:`Plot`
         """
 
-        total_rows = sum([p['rows'] for p in track_configs])
-
-        plot = Plot(self.width,
-                    total_rows, self.rowheight)
+        plot = Plot(base_gridspec, track_configs)
 
         for track, track_config in zip(self.tracks, track_configs):
 
@@ -175,8 +189,28 @@ class Browser(object):
         track_configs = [p.get_config(region, self)
                          for p in self.tracks]
 
-        plot = self.setup_plot(track_configs)
+        base_gridspec = self._make_base_gridspec(track_configs)
+
+        plot = self.setup_plot(base_gridspec, track_configs)
 
         plot.do_plot(region)
 
         return plot
+
+    def plot_to_ax(self, region, base_gridspec):
+        """Plot all tracks given a interval object for window size
+
+        :param region: Genomic region to plot data for.
+        :type region: :class:`pybedtools.Interval`
+
+        """
+
+        track_configs = [p.get_config(region, self)
+                         for p in self.tracks]
+
+        plot = self.setup_plot(base_gridspec, track_configs)
+
+        plot.do_plot(region)
+
+        return plot
+
