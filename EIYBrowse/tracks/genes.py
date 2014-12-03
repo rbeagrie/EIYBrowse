@@ -100,7 +100,10 @@ class GeneTrack(FileTrack):
 
         genes = self.datafile.get_genes(region)
 
-        for gene, start, stop in self._get_gene_extents(region, genes):
+        # TODO: Here we use the browser's width to determine overlaps, but
+        # if we were passed a gridspec to plot to then the browser's width
+        # is irrelevant.
+        for gene, start, stop in self._get_gene_extents(region, genes, browser):
 
             self.gene_rows.add_gene(gene, start, stop)
 
@@ -116,7 +119,7 @@ class GeneTrack(FileTrack):
 
         return len(self.gene_rows.rows) or 1
 
-    def _get_gene_extents(self, region, genes):
+    def _get_gene_extents(self, region, genes, browser):
 
         """Private method that iterates over genes and calculates the
         axis space that they will need to occupy, including their name label.
@@ -130,7 +133,7 @@ class GeneTrack(FileTrack):
         """
 
         old_figure = plt.gcf()
-        _figure = plt.figure(figsize=(16, 1))
+        _figure = plt.figure(figsize=(browser.width, 1))
         _plot_axis = _figure.add_subplot(111)
         _plot_axis.set_xlim(region.start, region.stop)
         _renderer = _figure.canvas.get_renderer()
