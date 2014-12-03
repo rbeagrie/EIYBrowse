@@ -86,7 +86,7 @@ class Plot(object):
         return gridspec.GridSpecFromSubplotSpec(no_frames, 2,
                                                 height_ratios=height_ratios,
                                                 width_ratios=[1,9],
-                                                wspace=0.0, hspace=0.0,
+                                                wspace=0.0, hspace=0.1,
                                                 subplot_spec=base_gridspec)
 
     def add_frame(self, track, track_config):
