@@ -197,13 +197,21 @@ class Browser(object):
 
         return plot
 
-    def plot_to_ax(self, region, base_gridspec):
+    def plot_to_ax(self, region, axis):
         """Plot all tracks given a interval object for window size
 
         :param region: Genomic region to plot data for.
         :type region: :class:`pybedtools.Interval`
 
         """
+
+        base_gridspec = axis.get_subplotspec()
+        axis.axis('off')
+
+        return self.plot_to_gridspec(region, base_gridspec)
+
+
+    def plot_to_gridspec(self, region, base_gridspec):
 
         track_configs = [p.get_config(region, self)
                          for p in self.tracks]
