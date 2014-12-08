@@ -20,7 +20,7 @@ class GenomicIntervalTrack(FileTrack):
     # further...
     # pylint: disable=too-many-arguments
     def __init__(self, datafile,
-                 labels=None, icons=None,
+                 labels=None, glyphs=None,
                  name=None, name_rotate=False):
 
         """To create a new genomic interval track:
@@ -30,9 +30,9 @@ class GenomicIntervalTrack(FileTrack):
         :param labels: If specified, a dictionary of additional arguments
             to pass to :func:`matplotlib.pyplot.text`
         :type labels: dict or None
-        :param icons: If specified, a dictionary of additional arguments
+        :param glyphs: If specified, a dictionary of additional arguments
             to pass to :meth:`matplotlib.axes.AxesSubplot.hlines`
-        :type icons: dict or None
+        :type glyphs: dict or None
         :param str name: Optional name label
         :param bool name_rotate: Whether to rotate the name label 90 degrees
         """
@@ -43,22 +43,22 @@ class GenomicIntervalTrack(FileTrack):
 
         if labels is None:
             labels = {}
-        if icons is None:
-            icons = {}
+        if glyphs is None:
+            glyphs = {}
 
-        if 'colors' in icons:
-            self.colors = itertools.cycle(icons['colors'])
-            del icons['colors']
+        if 'colors' in glyphs:
+            self.colors = itertools.cycle(glyphs['colors'])
+            del glyphs['colors']
         else:
             self.colors = None
 
-        if 'jitter' in icons:
-            self.jitter = icons['jitter']
-            del icons['jitter']
+        if 'jitter' in glyphs:
+            self.jitter = glyphs['jitter']
+            del glyphs['jitter']
         else:
             self.jitter = 0
 
-        self.labels, self.icons = labels, icons
+        self.labels, self.glyphs = labels, glyphs
 
     def get_config(self, region, browser):
 
@@ -96,12 +96,12 @@ class GenomicIntervalTrack(FileTrack):
             if self.colors is not None:
                 col = self.colors.next()
                 self.labels['color'] = col
-                self.icons['color'] = col
+                self.glyphs['color'] = col
 
             patches.append(
                 ax.hlines(vertical_pos,
                           interval.start, interval.stop,
-                          lw=4, **self.icons))
+                          lw=4, **self.glyphs))
 
             if interval.name is not '.':
                 ax.text(interval.start, 0.2, interval.name,
