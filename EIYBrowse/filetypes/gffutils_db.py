@@ -43,9 +43,18 @@ class GffutilsDb(object):
 
         for gene in gene_information:
 
-            mrnas = list(self.gene_db.children(gene.id, featuretype='mRNA'))
+            #FIXME: specify the GFF mrna featuretype, this is a kludge
+            try:
+                mrnas = list(self.gene_db.children(gene.id, featuretype='mRNA'))
 
-            longest_mrna = sorted(mrnas, key=lambda m: m.stop - m.start).pop()
+                longest_mrna = sorted(mrnas, key=lambda m: m.stop - m.start).pop()
+
+            except IndexError:
+
+                mrnas = list(self.gene_db.children(gene.id, featuretype='transcript'))
+
+                longest_mrna = sorted(mrnas, key=lambda m: m.stop - m.start).pop()
+
 
             exons = self.gene_db.children(longest_mrna.id, featuretype='exon')
 

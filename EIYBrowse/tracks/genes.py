@@ -274,8 +274,14 @@ class GeneTrack(FileTrack):
 
                 self.plot_exon(plot_ax, exon, row_index)
 
-        name_label_patch = self.plot_name(
-            plot_ax, gene.start, gene.attributes['Name'][0], row_index)
+        # FIXME: need to be able to specify the gene name attribute to look for
+        try:
+            name_label_patch = self.plot_name(
+                plot_ax, gene.start, gene.attributes['Name'][0], row_index)
+        except KeyError:
+            name_label_patch = self.plot_name(
+                plot_ax, gene.start, gene.attributes['gene_id'][0], row_index)
+
 
         return gene_body_patch, name_label_patch
 
