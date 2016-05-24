@@ -103,7 +103,7 @@ class GenomicIntervalTrack(FileTrack):
                           interval.start, interval.stop,
                           lw=4, **self.glyphs))
 
-            if interval.name is not '.':
+            if not interval.name == '.':
                 ax.text(interval.start, 0.2, interval.name,
                         **self.labels)
 
